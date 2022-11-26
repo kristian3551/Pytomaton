@@ -199,7 +199,7 @@ class Automaton:
         for state, letter in other_auto.transitions:
             for element in other_auto.transitions[(state, letter)]:
                 result.add_transition(state.label, letter, element.label)
-        if not set(result.starts).intersection(set(result.finals)):
+        if len(set(other_auto.starts).intersection(set(other_auto.finals))) == 0:
             result.finals = []
         for final in other_auto.finals:
             result.make_state_final(final.label)
@@ -311,7 +311,7 @@ class Automaton:
                 for state in current:
                     states_set += self.transitions[(state, letter)]\
                         if (state, letter) in self.transitions else []
-                set_label: str = str(sorted([state.label for state in states_set]))
+                set_label: str = str(sorted(set([state.label for state in states_set])))
                 if set_label not in result.states_dict:
                     queue.append(states_set)
                     result.add_state(set_label)
@@ -322,47 +322,37 @@ class Automaton:
         result.rename()
         return result
 
-    def minimize(self) -> Automaton:
-        """Return a minimized automaton with same language."""
+    def reverse(self) -> Automaton:
+        """Returns an automaton with language L(self)^rev"""
         result: Automaton = Automaton()
+        for state in self.states:
+            result.add_state(state.label)
+        for start in self.starts:
+            result.make_state_final(start.label)
+        for final in self.finals:
+            result.set_start(final.label)
+        for state, letter in self.transitions:
+            for res in self.transitions[(state, letter)]:
+                result.add_transition(res.label, letter, state.label)
         return result
 
     def __repr__(self) -> str:
-        return "--- Automaton:\n" + "States = " + str([el for el in self.states]) + \
+        return "--- Automaton:\n" + f"Alphabet: {str(self.alphabet)}"\
+            "\nStates = " + str([el for el in self.states]) + \
         "\nStarting states: " + str([el for el in self.starts]) \
             + "\nTransition function:\n" + "\n".join([f"--- {el} -> {self.transitions[el]}"\
                  for el in self.transitions]) + \
                 "\nFinal states: " + str(self.finals)
-# a: Automaton = Automaton()
-# a.add_state('0')
-# a.add_state('1')
-# a.add_transition('0', 'a', '1')
-# a.add_transition('0', 'b', '0')
-# a.add_transition('1', 'a', '0')
-# a.add_transition('1', 'b', '1')
-# a.make_state_final('1')
-# a.set_start('0')
-# other: Automaton = Automaton()
-# other.add_state()
-# other.add_state()
-# other.add_state()
-# other.add_transition('0', 'b', '1')
-# other.add_transition('0', 'a', '0')
-# other.add_transition('1', 'b', '2')
-# other.add_transition('1', 'a', '1')
-# other.add_transition('2', 'a', '2')
-# other.add_transition('2', 'b', '2')
-# other.make_state_final('2')
-# other.set_start('0')
+
 a: Automaton = Automaton()
 a.add_state()
 a.add_state()
 a.add_state()
-a.add_transition('0', 'a', '1')
-a.add_transition('0', 'a', '2')
-a.add_transition('0', 'b', '2')
-a.add_transition('2', 'a', '2')
-a.add_transition('2', 'b', '2')
-a.make_state_final('2')
+a.add_state()
 a.set_start('0')
-print(a.determinize())
+a.add_transition('0', 'a', '1')
+a.add_transition('1', 'b', '2')
+a.add_transition('2', 'a', '3')
+a.add_transition('3', 'a', '3')
+a.add_transition('3', 'b', '3')
+a.make_state_final('3')
