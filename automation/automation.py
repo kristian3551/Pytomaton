@@ -210,12 +210,9 @@ class Automaton:
                 other_auto.states_dict[state.label] = len(result.states)
             result.add_state(state.label)
         for final in result.finals:
-            # print("Final: ", final)
             for start in other_auto.starts:
-                # print("--- Start: ", start)
                 start_transitions: Dict[str, List[State]] = other_auto.transitions[start]\
                      if start in other_auto.transitions else {}
-                # print("----- Transitions", start_transitions)
                 for letter in start_transitions:
                     result.add_transitions(final.label, letter, start_transitions[letter])
         for state in other_auto.transitions:
@@ -251,11 +248,10 @@ class Automaton:
                 transitions: Dict[str, List[State]] = self.get_state_transitions(start)
                 for letter in transitions:
                     result.add_transitions(final.label, letter, transitions[letter])
-        start_label = "s" if "s" not in result.states_dict else str(len(result.states))
+        start_label = str(len(result.states))
         result.add_state(start_label)
         result.starts.append(result.get_state(start_label))
         result.make_state_final(start_label)
-        result.rename()
         return result
 
     def intersection(self, other_auto: Automaton) -> Automaton:
@@ -316,9 +312,11 @@ class Automaton:
         start_label: str = str(sorted(set([state.label for state in self.starts])))
         result.add_state(start_label)
         result.set_start(start_label)
+        if len([state for state in self.starts if state in self.finals]) > 0:
+            result.make_state_final(start_label)
         while queue:
             current: List[State] = queue.pop(0)
-            for letter in self.alphabet:
+            for letter in result.alphabet:
                 states_set: List[State] = []
                 for state in current:
                     states_set += self.transitions[state][letter] if state in self.transitions\
@@ -330,14 +328,13 @@ class Automaton:
                     if len([state for state in states_set if state in self.finals]) > 0:
                         result.make_state_final(set_label)
                 result.add_transition(str(sorted(\
-                    [state.label for state in current])), letter, set_label)
+                    set([state.label for state in current]))), letter, set_label)
         result.rename()
         return result
 
     def minimize(self) -> Automaton:
         """Return a minimized automaton with same language."""
-        result: Automaton = self.copy()
-        return result.reverse().determinize().reverse().determinize()
+        return self.copy().determinize().reverse().determinize().reverse().determinize()
 
     def reverse(self) -> Automaton:
         """Returns an automaton with language L(self)^rev"""
