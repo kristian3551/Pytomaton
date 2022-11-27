@@ -1,7 +1,7 @@
 """Module for working with regular expressions."""
 from typing import List
 
-from automation.automation import Automaton
+from automation import Automaton
 
 def is_letter(symbol: str) -> bool:
         return symbol.isalpha() or symbol.isdigit()
@@ -14,8 +14,7 @@ class RegExpr:
 
     def validate(self) -> bool:
         """Function for checking if regex is valid."""
-        # TODO: Ask Stoycho how to validate expressions via regular expressions.
-        return self.__validate()
+        return self.__validate(self.regex)
 
     def convert_in_RPN(self) -> str:
         """Converts regex into reverse polish notation."""
@@ -50,28 +49,48 @@ class RegExpr:
             output.append(stack.pop())
         return "".join(output)
 
-    def __validate(self) -> bool:
+    def __validate(self, current: str) -> bool:
+        """Helper for validating regex. It follows the inductive definition of building regexes."""
+        # r -> r* | (r)
+        # r1, r2 -> r1.r2 | r1 + r2
+        if current == '$' or is_letter(current):
+            return True
+        if current == '':
+            return False
+        if current[0] == '(' and current[-1] == ')' and self.__validate(current[1:-1]):
+            return True
+        if current[-1] == '*' and self.__validate(current[0:-1]):
+            return True
+        for i in range(len(current)):
+            symbol: str = current[i]
+            if symbol == '+' and self.__validate(current[0:i]) and self.__validate(current[i+1:]):
+                return True
+        for i in range(len(current)):
+            if self.__validate(current[0:i]) and self.__validate(current[i:]):
+                return True
         return False
 
     def compile(self) -> Automaton:
-        """Reads regular expression and returns """
+        """Reads valid regular expression and returns an automaton with same language."""
+        # if not self.validate():
+        #     print("Regular expression is NOT valid!")
+        #     return Automaton()
         regex_RPN: str = self.convert_in_RPN()
         stack: List[Automaton] = []
         for symbol in regex_RPN:
             if symbol == '+':
                 a: Automaton = stack.pop()
                 b: Automaton = stack.pop()
-                stack.append(a.union(b).determinize())
+                stack.append(a.union(b))
             elif symbol == '*':
                 starred: Automaton = stack.pop()
-                stack.append(starred.star().determinize())
+                stack.append(starred.star())
             elif symbol == '.':
                 concat_1: Automaton = stack.pop()
                 concat_2: Automaton = stack.pop()
-                stack.append(concat_2.concat(concat_1).determinize())
+                stack.append(concat_2.concat(concat_1))
             elif symbol == '$':
                 stack.append(Automaton.singleton_epsilon())
             else:
                 stack.append(Automaton.by_letter(symbol))
         return stack[-1].minimize()
-
