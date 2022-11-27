@@ -1,6 +1,6 @@
 """Module providing the crusial functionality for the project."""
 from __future__ import annotations
-from typing import Set, Tuple, Dict, List
+from typing import Set, Dict, List
 import copy
 
 class State:
@@ -101,8 +101,9 @@ class Automaton:
 
     def add_transitions(self, label1: str, letter, states: List[State]) -> bool:
         """Adds many transitions at a time."""
-        for state in states:
-            res: bool = self.add_transition(label1, letter, state.label)
+        states_labels: List[str] = [state.label for state in states]
+        for state_label in states_labels:
+            res: bool = self.add_transition(label1, letter, state_label)
             if not res:
                 return False
         return True
@@ -161,7 +162,8 @@ class Automaton:
         """Makes automaton total."""
         if self.is_total():
             return
-        self.add_state("t")
+        trash_label = "t" if "t" not in self.states_dict else str(len(self.states))
+        self.add_state(trash_label)
         trash_state_idx = len(self.states) - 1
         for letter in self.alphabet:
             self.__add_transition_by_index(trash_state_idx, letter, trash_state_idx)
@@ -169,7 +171,7 @@ class Automaton:
             state_transitions: Dict[str, List[State]] = self.get_state_transitions(state)
             for letter in self.alphabet:
                 if not letter in state_transitions:
-                    self.add_transition(state.label, letter, "t")
+                    self.add_transition(state.label, letter, trash_label)
 
     def get_state(self, label: str) -> State:
         """Returns state by label."""
@@ -183,7 +185,9 @@ class Automaton:
         other_auto: Automaton = auto.copy()
         for state in other_auto.states:
             if state.label in result.states_dict:
+                del other_auto.states_dict[state.label]
                 state.label = str(len(result.states))
+                other_auto.states_dict[state.label] = len(result.states)
             result.add_state(state.label)
         for state in other_auto.transitions:
             for letter in other_auto.transitions[state]:
@@ -198,21 +202,27 @@ class Automaton:
         """Concatenates automatons"""
         result: Automaton = self.copy()
         other_auto: Automaton = auto.copy()
-        for state in other_auto.states:
+        for i in range(len(other_auto.states)):
+            state: State = other_auto.states[i]
             if state.label in result.states_dict:
+                del other_auto.states_dict[state.label]
                 state.label = str(len(result.states))
+                other_auto.states_dict[state.label] = len(result.states)
             result.add_state(state.label)
         for final in result.finals:
-            for letter in result.alphabet:
-                for start in other_auto.starts:
-                    if start in other_auto.transitions and letter in other_auto.transitions[start]:
-                        result.add_transitions(final.label, letter,\
-                             other_auto.transitions[start][letter])
+            # print("Final: ", final)
+            for start in other_auto.starts:
+                # print("--- Start: ", start)
+                start_transitions: Dict[str, List[State]] = other_auto.transitions[start]\
+                     if start in other_auto.transitions else {}
+                # print("----- Transitions", start_transitions)
+                for letter in start_transitions:
+                    result.add_transitions(final.label, letter, start_transitions[letter])
         for state in other_auto.transitions:
             for letter in other_auto.transitions[state]:
                 result.add_transitions(state.label, letter, other_auto.transitions[state][letter])
 
-        if not set(result.starts).intersection(set(result.finals)):
+        if not set(other_auto.starts).intersection(set(other_auto.finals)):
             result.finals = []
         for final in other_auto.finals:
             result.make_state_final(final.label)
@@ -238,17 +248,14 @@ class Automaton:
         result: Automaton = self.copy()
         for final in result.finals:
             for start in result.starts:
-                transitions: Dict[str, List[State]] = result.get_state_transitions(start)
+                transitions: Dict[str, List[State]] = self.get_state_transitions(start)
                 for letter in transitions:
                     result.add_transitions(final.label, letter, transitions[letter])
         start_label = "s" if "s" not in result.states_dict else str(len(result.states))
         result.add_state(start_label)
-        for start in result.starts:
-            start_transitions: Dict[str, List[State]] = result.get_state_transitions(start)
-            for letter in transitions:
-                result.add_transitions(start_label, letter, start_transitions[letter])
-        result.starts = [result.get_state(start_label)]
+        result.starts.append(result.get_state(start_label))
         result.make_state_final(start_label)
+        result.rename()
         return result
 
     def intersection(self, other_auto: Automaton) -> Automaton:
@@ -329,8 +336,8 @@ class Automaton:
 
     def minimize(self) -> Automaton:
         """Return a minimized automaton with same language."""
-        result: Automaton = Automaton()
-        return result
+        result: Automaton = self.copy()
+        return result.reverse().determinize().reverse().determinize()
 
     def reverse(self) -> Automaton:
         """Returns an automaton with language L(self)^rev"""
@@ -348,23 +355,29 @@ class Automaton:
                     result.add_transition(res.label, letter, state.label)
         return result
 
+    @staticmethod
+    def by_letter(letter: str) -> Automaton:
+        """Creates an automaton with language L = {letter}."""
+        auto: Automaton = Automaton()
+        auto.add_state()
+        auto.add_state()
+        auto.set_start('0')
+        auto.make_state_final('1')
+        auto.add_transition('0', letter, '1')
+        return auto
+
+    @staticmethod
+    def singleton_epsilon() -> Automaton:
+        """Creates an automaton with language L = {letter}."""
+        auto: Automaton = Automaton()
+        auto.add_state()
+        auto.set_start('0')
+        auto.make_state_final('0')
+        return auto
+
     def __repr__(self) -> str:
         return "--- Automaton:\n" + "States = " + str([el for el in self.states]) + \
         "\nStarting states: " + str([el for el in self.starts]) \
             + "\nTransition function:\n" + "\n".join([f"--- {el} -> {self.transitions[el]}"\
                  for el in self.transitions]) + \
                 "\nFinal states: " + str(self.finals)
-
-a: Automaton = Automaton()
-a.add_state()
-a.add_state()
-a.add_state()
-a.add_state()
-a.add_transition('0', 'a', '0')
-a.add_transition('0', 'b', '0')
-a.add_transition('0', 'a', '1')
-a.add_transition('1', 'b', '2')
-a.add_transition('2', 'a', '3')
-a.make_state_final('3')
-a.set_start('0')
-print(a.star().reverse().accepts_word("ababbab"))
