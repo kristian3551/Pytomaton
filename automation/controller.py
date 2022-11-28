@@ -35,6 +35,11 @@ class Controller:
             raise KeyError(NOT_FOUND_ERROR_MSG)
         self.automatons[name].add_state(label)
         return True
+    def remove_start(self, name: str, label: str) -> bool:
+        if not name in self.automatons:
+            raise KeyError(NOT_FOUND_ERROR_MSG)
+        self.automatons[name].remove_start(label)
+        return True
     def print_automaton(self, name: str) -> None:
         if not name in self.automatons:
             raise KeyError(NOT_FOUND_ERROR_MSG)
@@ -114,7 +119,8 @@ class Controller:
         return Automaton()
     def save_in_file(self) -> None:
         fd = open(os.path.join(*DEFAULT_DATABASE_PATH), 'w')
-        fd.writelines(''.join([f"{name}\n" + self.automatons[name].stream_format() for name in self.automatons]))
+        fd.writelines(''.join([f"{name}\n" + self.automatons[name].stream_format()\
+             for name in self.automatons]))
         fd.close()
     def load_from_file(self) -> None:
         self.automatons = {}

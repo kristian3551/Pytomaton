@@ -1,16 +1,18 @@
 """The console app with console UI/UX."""
 
 from typing import List
-from automation import Automaton
 from controller import Controller
+from automation import Automaton
 
 class Engine:
+    """The console app itself."""
     def __init__(self) -> None:
         self.controller: Controller = Controller()
         self.has_changes = False
     def __tokenize(self, line: str) -> List[str]:
         return line.split(' ')
     def help(self) -> None:
+        """Prints user support."""
         print("""
         Supported functionalities are:
 
@@ -39,6 +41,7 @@ class Engine:
         21. exit                                               -> Exit from the app.
         """)
     def run(self) -> None:
+        """Actual console app."""
         self.controller.load_from_file()
         print("Hello to my application! Please choose a command or type 'help' for more info!")
         line: str = 'default_noempty_line'
@@ -50,7 +53,8 @@ class Engine:
             try:
                 if command == 'add':
                     if tokens[2] == 'from' and tokens[3] == 'regex':
-                        if self.controller.add_automaton(tokens[1], self.controller.from_regex(tokens[4])):
+                        if self.controller.add_automaton(tokens[1],\
+                             self.controller.from_regex(tokens[4])):
                             self.has_changes = True
                             print(f'Automaton {tokens[1]} added successfully')
                         else:
@@ -85,15 +89,19 @@ class Engine:
                 elif command == 'setstart':
                     if self.controller.set_start(tokens[1], tokens[2]):
                         self.has_changes = True
+                elif command == 'removestart':
+                    if self.controller.remove_start(tokens[1], tokens[2]):
+                        self.has_changes = True
                 elif command == 'addtransition':
                     if self.controller.add_transition(tokens[1], tokens[2], tokens[3], tokens[4]):
                         self.has_changes = True
                 elif command == 'removetransition':
-                    if self.controller.add_transition(tokens[1], tokens[2], tokens[3], tokens[4]):
+                    if self.controller.remove_transition(tokens[1], tokens[2], tokens[3], tokens[4]):
                         self.has_changes = True
                 elif command == 'acceptsword':
                     word: str = tokens[2] if len(tokens) > 2 else ''
-                    print(f"'{word}' is", "ACCEPTED" if self.controller.accepts_word(tokens[1], word) else "REJECTED.")
+                    print(f"'{word}' is", "ACCEPTED" if self.controller.accepts_word(\
+                        tokens[1], word) else "REJECTED.")
                 elif command == 'maketotal':
                     self.controller.make_total(tokens[1])
                 elif command == 'total':
@@ -139,39 +147,51 @@ class Engine:
                     self.controller.clear()
                 elif tokens[1] == '=':
                     if self.controller.contains(tokens[0]):
-                            self.controller.remove_automaton(tokens[0])
+                        self.controller.remove_automaton(tokens[0])
                     if tokens[2] == 'from' and tokens[3] == 'regex':
-                        self.controller.add_automaton(tokens[0], self.controller.from_regex(tokens[4]))
+                        self.controller.add_automaton(tokens[0],\
+                            self.controller.from_regex(tokens[4]))
                     elif tokens[2] == 'empty':
-                        self.controller.add_automaton(tokens[0], self.controller.empty_automaton())
+                        self.controller.add_automaton(tokens[0],\
+                            self.controller.empty_automaton())
                     elif tokens[2] == 'concat':
-                        self.controller.add_automaton(tokens[0], self.controller.concat(tokens[3], tokens[4]))
+                        self.controller.add_automaton(tokens[0],\
+                            self.controller.concat(tokens[3], tokens[4]))
                     elif tokens[2] == 'union':
-                        self.controller.add_automaton(tokens[0], self.controller.union(tokens[3], tokens[4]))
+                        self.controller.add_automaton(tokens[0],\
+                            self.controller.union(tokens[3], tokens[4]))
                     elif tokens[2] == 'star':
-                        self.controller.add_automaton(tokens[0], self.controller.star(tokens[3]))
+                        self.controller.add_automaton(tokens[0],\
+                            self.controller.star(tokens[3]))
                     elif tokens[2] == 'minimize':
-                        self.controller.add_automaton(tokens[0], self.controller.minimize(tokens[3]))
+                        self.controller.add_automaton(tokens[0],\
+                            self.controller.minimize(tokens[3]))
                     elif tokens[2] == 'determinize':
-                        self.controller.add_automaton(tokens[0], self.controller.determinize(tokens[3]))
+                        self.controller.add_automaton(tokens[0],\
+                            self.controller.determinize(tokens[3]))
                     elif tokens[2] == 'reverse':
-                        self.controller.add_automaton(tokens[0], self.controller.reverse(tokens[3]))
+                        self.controller.add_automaton(tokens[0],\
+                            self.controller.reverse(tokens[3]))
                     elif tokens[2] == 'total':
-                        self.controller.add_automaton(tokens[0], self.controller.total(tokens[3]))
+                        self.controller.add_automaton(tokens[0],\
+                            self.controller.total(tokens[3]))
                     elif tokens[2] == 'complement':
-                        self.controller.add_automaton(tokens[0], self.controller.complement(tokens[3]))
+                        self.controller.add_automaton(tokens[0],\
+                            self.controller.complement(tokens[3]))
                     elif tokens[2] == 'intersect':
-                        self.controller.add_automaton(tokens[0], self.controller.intersection(tokens[3], tokens[4]))
+                        self.controller.add_automaton(tokens[0],\
+                            self.controller.intersection(tokens[3], tokens[4]))
                     else:
                         if self.controller.contains(tokens[0]):
                             self.controller.remove_automaton(tokens[0])
-                        self.controller.add_automaton(tokens[0], self.controller.get_automaton(tokens[2]))
+                        self.controller.add_automaton(tokens[0],\
+                             self.controller.get_automaton(tokens[2]))
                     self.has_changes = True
                 else:
                     print("Invalid command! Type 'help' for more info!")
             except KeyError as error:
                 print(error.args[0])
             except IndexError as error:
-                print("Invalid command! Type 'help' for more info!")
+                print(f"{error.args[0]} Type 'help' for more info!")
             except ValueError as error:
                 print(error.args[0])

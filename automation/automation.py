@@ -73,6 +73,14 @@ class Automaton:
         self.starts.append(self.states[index])
         return True
 
+    def remove_start(self, label: str) -> bool:
+        """Removing start state"""
+        index: int = self.states_dict[label] if label in self.states_dict else -1
+        if index < 0 or self.states[index] not in self.starts:
+            return False
+        self.starts.remove(self.states[index])
+        return True
+
     def __add_transition_by_index(self, idx1: int, letter: str, idx2: int) -> bool:
         """Adding new transition from state with index idx1 to state
         with index idx2 with letter 'letter'"""
@@ -111,8 +119,11 @@ class Automaton:
         return True
 
     def remove_transition(self, label1: str, letter: str, label2: str) -> bool:
-        if self.get_state(label1) not in self.transitions or letter not in self.transitions[self.get_state(label1)]\
-            or label2 not in self.states_dict or self.get_state(label2) not in self.transitions[self.get_state(label1)][letter]:
+        """Removes transition."""
+        if self.get_state(label1) not in self.transitions\
+             or letter not in self.transitions[self.get_state(label1)]\
+            or label2 not in self.states_dict or self.get_state(label2)\
+                 not in self.transitions[self.get_state(label1)][letter]:
             return False
         self.transitions[self.get_state(label1)][letter].remove(self.get_state(label2))
         return True
@@ -275,7 +286,7 @@ class Automaton:
         if not self.is_deterministic() or not other_auto.is_deterministic():
             raise ValueError("Automaton is not deterministic.")
         result: Automaton = Automaton()
-        result.alphabet = [el for el in self.alphabet]
+        result.alphabet = list(self.alphabet)
         for state_1 in self.states:
             for state_2 in other_auto.states:
                 result.add_state(f"{state_1.label}x{state_2.label}")
