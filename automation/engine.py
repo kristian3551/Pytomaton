@@ -135,6 +135,8 @@ class Engine:
                     else:
                         line = ''
                         print("Goodbye!")
+                elif command == 'clear':
+                    self.controller.clear()
                 elif tokens[1] == '=':
                     if self.controller.contains(tokens[0]):
                             self.controller.remove_automaton(tokens[0])
@@ -173,6 +175,3 @@ class Engine:
                 print("Invalid command! Type 'help' for more info!")
             except ValueError as error:
                 print(error.args[0])
-
-engine: Engine = Engine()
-engine.run()

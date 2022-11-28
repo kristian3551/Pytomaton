@@ -147,10 +147,15 @@ class Controller:
         dot = graphviz.Digraph()
         auto: Automaton = self.automatons[name]
         for state in auto.states:
-            if state not in auto.finals:
-                dot.node(state.label, shape="circle")
+            if state in auto.finals:
+                if state in auto.starts:
+                    dot.node(state.label, shape="doublecircle", style="filled", fillcolor="green")
+                else:
+                    dot.node(state.label, shape="doublecircle")
+            elif state in auto.starts:
+                dot.node(state.label, shape="circle", style="filled", fillcolor="green")
             else:
-                dot.node(state.label, shape="doublecircle")
+                dot.node(state.label, shape="circle")
         for state in auto.transitions:
             added_edges: Set[Tuple[str, str]] = set()
             for letter in auto.transitions[state]:
@@ -163,7 +168,8 @@ class Controller:
                         dot.edge(state.label, target.label, label=f" {', '.join(letters)}")
                         added_edges.add((state.label, target.label))
         dot.render('automaton.gv', view=True)
-
+    def clear(self) -> None:
+        os.system('cls')
     def print(self) -> None:
         for name in self.automatons:
             print('-------------------------')
