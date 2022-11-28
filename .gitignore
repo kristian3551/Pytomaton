@@ -4,3 +4,5 @@
 /automation/__pycache__
 /tests/__pycache__
 /.pytest_cache
+automaton.gv
+automaton.gv.pdf

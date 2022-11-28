@@ -1,9 +1,10 @@
 """Module for managing automatons."""
 
-from typing import Dict, List
+from typing import Dict, List, Set, Tuple
 from automation import Automaton
 from reg_expr import RegExpr
 import os
+import graphviz
 
 NOT_FOUND_ERROR_MSG: str = "Automaton is not found!"
 AUTOMATON_ALREADY_EXISTS_MSG: str = "Automaton already exists!"
@@ -139,7 +140,30 @@ class Controller:
             for final in finals:
                 self.automatons[name].make_state_final(final)
             line = fd.readline()
-        fd.close()
+        fd.close() 
+    def show_automaton(self, name: str) -> None:
+        if name not in self.automatons:
+            raise KeyError(NOT_FOUND_ERROR_MSG)
+        dot = graphviz.Digraph()
+        auto: Automaton = self.automatons[name]
+        for state in auto.states:
+            if state not in auto.finals:
+                dot.node(state.label, shape="circle")
+            else:
+                dot.node(state.label, shape="doublecircle")
+        for state in auto.transitions:
+            added_edges: Set[Tuple[str, str]] = set()
+            for letter in auto.transitions[state]:
+                for target in auto.transitions[state][letter]:
+                    letters: List[str] = []
+                    for letter in auto.transitions[state]:
+                        if target in auto.transitions[state][letter]:
+                            letters.append(letter)
+                    if (state.label, target.label) not in added_edges:
+                        dot.edge(state.label, target.label, label=f" {', '.join(letters)}")
+                        added_edges.add((state.label, target.label))
+        dot.render('automaton.gv', view=True)
+
     def print(self) -> None:
         for name in self.automatons:
             print('-------------------------')

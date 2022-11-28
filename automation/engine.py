@@ -120,6 +120,8 @@ class Engine:
                     self.has_changes = False
                 elif command == 'help':
                     self.help()
+                elif command == 'show':
+                    self.controller.show_automaton(tokens[1])
                 elif command == 'exit':
                     if self.has_changes:
                         print('Changes have been made. Save it first or type exit again!')
