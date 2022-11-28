@@ -34,8 +34,9 @@ class Automaton:
         self.states.append(State(label))
         self.states_dict[label] = len(self.states) - 1
 
-    def remove_state(self, index: int) -> bool:
+    def remove_state(self, label: str) -> bool:
         """Removes state"""
+        index: int = self.states_dict[label] if label in self.states_dict else -1
         if index >= len(self.states) or index < 0:
             return False
         self.finals = [state for state in self.finals if state is not self.states[index]]
@@ -100,13 +101,20 @@ class Automaton:
         idx2: int = self.states_dict[label2] if label2 in self.states_dict else -1
         return self.__add_transition_by_index(idx1, letter, idx2)
 
-    def add_transitions(self, label1: str, letter, states: List[State]) -> bool:
+    def __add_transitions(self, label1: str, letter, states: List[State]) -> bool:
         """Adds many transitions at a time."""
         states_labels: List[str] = [state.label for state in states]
         for state_label in states_labels:
             res: bool = self.add_transition(label1, letter, state_label)
             if not res:
                 return False
+        return True
+
+    def remove_transition(self, label1: str, letter: str, label2: str) -> bool:
+        if self.get_state(label1) not in self.transitions or letter not in self.transitions[self.get_state(label1)]\
+            or label2 not in self.states_dict or self.get_state(label2) not in self.transitions[self.get_state(label1)][letter]:
+            return False
+        self.transitions[self.get_state(label1)][letter].remove(self.get_state(label2))
         return True
 
     def __get_state_transitions_by_index(self, index: int) -> Dict[str, List[State]]:
@@ -174,6 +182,12 @@ class Automaton:
                 if not letter in state_transitions:
                     self.add_transition(state.label, letter, trash_label)
 
+    def total(self) -> Automaton:
+        """Returns a totalized copy of the automaton."""
+        result: Automaton = self.copy()
+        result.make_total()
+        return result
+
     def get_state(self, label: str) -> State:
         """Returns state by label."""
         return self.states[self.states_dict[label]] if label in self.states_dict else State()
@@ -192,7 +206,7 @@ class Automaton:
             result.add_state(state.label)
         for state in other_auto.transitions:
             for letter in other_auto.transitions[state]:
-                result.add_transitions(state.label, letter, other_auto.transitions[state][letter])
+                result.__add_transitions(state.label, letter, other_auto.transitions[state][letter])
         for final in other_auto.finals:
             result.make_state_final(final.label)
         for start in other_auto.starts:
@@ -215,10 +229,10 @@ class Automaton:
                 start_transitions: Dict[str, List[State]] = other_auto.transitions[start]\
                      if start in other_auto.transitions else {}
                 for letter in start_transitions:
-                    result.add_transitions(final.label, letter, start_transitions[letter])
+                    result.__add_transitions(final.label, letter, start_transitions[letter])
         for state in other_auto.transitions:
             for letter in other_auto.transitions[state]:
-                result.add_transitions(state.label, letter, other_auto.transitions[state][letter])
+                result.__add_transitions(state.label, letter, other_auto.transitions[state][letter])
 
         if not set(other_auto.starts).intersection(set(other_auto.finals)):
             result.finals = []
@@ -229,8 +243,7 @@ class Automaton:
     def complement(self) -> Automaton:
         """Returns automaton with complement language."""
         if not self.is_deterministic():
-            print("Automaton is not deterministic.")
-            return Automaton()
+            raise ValueError("Automaton is not deterministic.")
         result: Automaton = self.copy()
         if not result.is_total():
             result.make_total()
@@ -248,7 +261,7 @@ class Automaton:
             for start in result.starts:
                 transitions: Dict[str, List[State]] = self.get_state_transitions(start)
                 for letter in transitions:
-                    result.add_transitions(final.label, letter, transitions[letter])
+                    result.__add_transitions(final.label, letter, transitions[letter])
         start_label = str(len(result.states))
         result.add_state(start_label)
         result.starts.append(result.get_state(start_label))
@@ -382,16 +395,9 @@ class Automaton:
 
     def save_in_file(self, path: List[str]) -> None:
         fd = open(os.path.join(*path), 'w')
-        dict_to_list: List[str] = []
-        for state in self.transitions:
-            for letter in self.transitions[state]:
-                dict_to_list.append(f"{state.label} {letter} " + " ".join(\
-                    [st.label for st in self.transitions[state][letter]]))
-        fd.writelines([" ".join(self.states_dict.keys()) + '\n',
-                " ".join([start.label for start in self.starts]) + '\n',
-                "\n".join(dict_to_list) + '\n', 
-                " ".join([final.label for final in self.finals]) + '\n'])
+        fd.writelines(self.stream_format())
         fd.close()
+    
     def load_from_file(self, path: List[str]) -> None:
         fd = open(os.path.join(*path))
         states_labels: List[str] = fd.readline().split(" ")
@@ -410,3 +416,14 @@ class Automaton:
         for label in final_labels:
             self.make_state_final(label)
         fd.close()
+
+    def stream_format(self) -> str:
+        dict_to_list: List[str] = []
+        for state in self.transitions:
+            for letter in self.transitions[state]:
+                dict_to_list.append(f"{state.label} {letter} " + " ".join(\
+                    [st.label for st in self.transitions[state][letter]]))
+        return "".join([" ".join(self.states_dict.keys()) + '\n',
+                " ".join([start.label for start in self.starts]) + '\n',
+                "\n".join(dict_to_list) + '\n', 
+                "f " + " ".join([final.label for final in self.finals]) + '\n'])
