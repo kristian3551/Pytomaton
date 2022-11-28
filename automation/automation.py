@@ -2,6 +2,7 @@
 from __future__ import annotations
 from typing import Set, Dict, List
 import copy
+import os
 
 class State:
     """State in a nutshell"""
@@ -378,3 +379,34 @@ class Automaton:
             + "\nTransition function:\n" + "\n".join([f"--- {el} -> {self.transitions[el]}"\
                  for el in self.transitions]) + \
                 "\nFinal states: " + str(self.finals)
+
+    def save_in_file(self, path: List[str]) -> None:
+        fd = open(os.path.join(*path), 'w')
+        dict_to_list: List[str] = []
+        for state in self.transitions:
+            for letter in self.transitions[state]:
+                dict_to_list.append(f"{state.label} {letter} " + " ".join(\
+                    [st.label for st in self.transitions[state][letter]]))
+        fd.writelines([" ".join(self.states_dict.keys()) + '\n',
+                " ".join([start.label for start in self.starts]) + '\n',
+                "\n".join(dict_to_list) + '\n', 
+                " ".join([final.label for final in self.finals]) + '\n'])
+        fd.close()
+    def load_from_file(self, path: List[str]) -> None:
+        fd = open(os.path.join(*path))
+        states_labels: List[str] = fd.readline().split(" ")
+        for label in states_labels:
+            self.add_state(label.replace('\n', ''))
+        starts_labels: List[str] = fd.readline().split(" ")
+        for label in starts_labels:
+            self.set_start(label.replace('\n', ''))
+        rest: List[str] = fd.read().split('\n')
+        for i in range(len(rest) - 2):
+            transitions_raw = rest[i].split(" ")
+            start, letter, *targets = transitions_raw
+            for target in targets:
+                self.add_transition(start, letter, target)
+        final_labels: List[str] = rest[-2].split(" ")
+        for label in final_labels:
+            self.make_state_final(label)
+        fd.close()
