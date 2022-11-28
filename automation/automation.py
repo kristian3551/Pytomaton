@@ -271,11 +271,9 @@ class Automaton:
     def intersection(self, other_auto: Automaton) -> Automaton:
         """Returns an automaton with language L(self) ^ L(other_auto)."""
         if len(set(self.alphabet).intersection(set(other_auto.alphabet))) != len(self.alphabet):
-            print("Automations don't have same alphabet.")
-            return Automaton()
+            raise ValueError("Automations don't have same alphabet.")
         if not self.is_deterministic() or not other_auto.is_deterministic():
-            print("Automations are not deterministic.")
-            return Automaton()
+            raise ValueError("Automaton is not deterministic.")
         result: Automaton = Automaton()
         result.alphabet = [el for el in self.alphabet]
         for state_1 in self.states:
