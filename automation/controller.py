@@ -26,9 +26,7 @@ class Controller:
             raise KeyError(NOT_FOUND_ERROR_MSG)
         del self.automatons[name]
         return True
-    def replace_automaton(self, name: str, auto: Automaton) -> bool:
-        if name not in self.automatons:
-            raise KeyError(NOT_FOUND_ERROR_MSG)
+    def replace_or_add_automaton(self, name: str, auto: Automaton) -> bool:
         self.automatons[name] = auto
         return True
     def get_automaton(self, name: str) -> Automaton:
@@ -183,7 +181,7 @@ class Controller:
                         if target in auto.transitions[state][letter]:
                             letters.append(letter)
                     if (state.label, target.label) not in added_edges:
-                        dot.edge(state.label, target.label, label=f" {', '.join(letters)}")
+                        dot.edge(state.label, target.label, label=f" {', '.join(sorted(letters))}")
                         added_edges.add((state.label, target.label))
         dot.render('automaton.gv', view=True)
     def clear(self) -> None:
