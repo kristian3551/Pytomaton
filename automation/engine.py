@@ -23,6 +23,7 @@ class Engine:
         5. makefinal <name> <label>                            -> Makes state with label <label> final to automaton <name>.
         6. makeunfinal <name> <label>                          -> Removes state with label <label> from automaton <name>'s finals.
         7. setstart <name> <label>                             -> Self explanatory.
+        7'. removestart <name> <label>                         -> -----||-----
         8. addtransition <name> <label1> <letter> <label2>     -> -----||-----
         8'. removetransition <name> <label1> <letter> <label2> -> -----||-----
         9. acceptsword <name> <word>                           -> Checks if <word> is in the language of <name>. If you don't write a word,
@@ -38,7 +39,8 @@ class Engine:
         18. minimize <name>                                    -> Prints the minimized (and determinized) version of automaton <name>.
         19. reverse <name>                                     -> Prints the automaton with language L(<name>)^rev.
         20. save                                               -> Saves all automatons in text file.
-        21. exit                                               -> Exit from the app.
+        21. show <name>                                        -> Opens a PDF with automaton visualization.
+        22. exit                                               -> Exit from the app.
         """)
     def run(self) -> None:
         """Actual console app."""
@@ -147,40 +149,40 @@ class Engine:
                     self.controller.clear()
                 elif tokens[1] == '=':
                     if tokens[2] == 'from' and tokens[3] == 'regex':
-                        self.controller.replace_automaton(tokens[0],\
+                        self.controller.replace_or_add_automaton(tokens[0],\
                             self.controller.from_regex(tokens[4]))
                     elif tokens[2] == 'empty':
-                        self.controller.replace_automaton(tokens[0],\
+                        self.controller.replace_or_add_automaton(tokens[0],\
                             self.controller.empty_automaton())
                     elif tokens[2] == 'concat':
-                        self.controller.replace_automaton(tokens[0],\
+                        self.controller.replace_or_add_automaton(tokens[0],\
                             self.controller.concat(tokens[3], tokens[4]))
                     elif tokens[2] == 'union':
-                        self.controller.replace_automaton(tokens[0],\
+                        self.controller.replace_or_add_automaton(tokens[0],\
                             self.controller.union(tokens[3], tokens[4]))
                     elif tokens[2] == 'star':
-                        self.controller.replace_automaton(tokens[0],\
+                        self.controller.replace_or_add_automaton(tokens[0],\
                             self.controller.star(tokens[3]))
                     elif tokens[2] == 'minimize':
-                        self.controller.replace_automaton(tokens[0],\
+                        self.controller.replace_or_add_automaton(tokens[0],\
                             self.controller.minimize(tokens[3]))
                     elif tokens[2] == 'determinize':
-                        self.controller.replace_automaton(tokens[0],\
+                        self.controller.replace_or_add_automaton(tokens[0],\
                             self.controller.determinize(tokens[3]))
                     elif tokens[2] == 'reverse':
-                        self.controller.replace_automaton(tokens[0],\
+                        self.controller.replace_or_add_automaton(tokens[0],\
                             self.controller.reverse(tokens[3]))
                     elif tokens[2] == 'total':
-                        self.controller.replace_automaton(tokens[0],\
+                        self.controller.replace_or_add_automaton(tokens[0],\
                             self.controller.total(tokens[3]))
                     elif tokens[2] == 'complement':
-                        self.controller.replace_automaton(tokens[0],\
+                        self.controller.replace_or_add_automaton(tokens[0],\
                             self.controller.complement(tokens[3]))
                     elif tokens[2] == 'intersect':
-                        self.controller.replace_automaton(tokens[0],\
+                        self.controller.replace_or_add_automaton(tokens[0],\
                             self.controller.intersection(tokens[3], tokens[4]))
                     else:
-                        self.controller.replace_automaton(tokens[0],\
+                        self.controller.replace_or_add_automaton(tokens[0],\
                              self.controller.get_automaton(tokens[2]))
                     self.has_changes = True
                 else:
