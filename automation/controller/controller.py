@@ -1,10 +1,11 @@
 """Module for managing automatons."""
 
 from typing import Dict, List, Set, Tuple
-from automation import Automaton
-from reg_expr import RegExpr
+from automaton import automaton
+from regexpr.reg_expr import RegExpr
 import os
 import graphviz
+Automaton = automaton.Automaton
 
 NOT_FOUND_ERROR_MSG: str = "Automaton is not found!"
 AUTOMATON_ALREADY_EXISTS_MSG: str = "Automaton already exists!"

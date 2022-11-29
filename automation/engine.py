@@ -1,8 +1,8 @@
 """The console app with console UI/UX."""
 
 from typing import List
-from controller import Controller
-from automation import Automaton
+from controller import controller
+Controller = controller.Controller
 
 class Engine:
     """The console app itself."""
@@ -16,7 +16,7 @@ class Engine:
         print("""
         Supported functionalities are:
 
-        1. add <name> from regex <regex>|empty                 -> Adds an automaton <name> with with language L(<regex>)|{\}.
+        1. add <name> from regex <regex>|empty                 -> Adds an automaton <name> with with L(<regex>)|{}.
         2. remove <name>                                       -> Removes automaton <name>.
         3. addstate <name> <label>                             -> Adds state with label <label> to automaton <name>.
         4. remstate <name> <label>                             -> Removes state with label <label> to automaton <name>.
@@ -62,7 +62,7 @@ class Engine:
                         else:
                             print("Automaton added unsuccessfully!")
                     elif tokens[2] == 'empty':
-                        if self.controller.add_automaton(tokens[1], Automaton()):
+                        if self.controller.add_automaton(tokens[1], self.controller.empty_automaton()):
                             self.has_changes = True
                             print(f'Automaton {tokens[1]} added successfully')
                         else:

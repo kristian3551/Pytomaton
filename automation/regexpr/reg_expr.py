@@ -1,7 +1,8 @@
 """Module for working with regular expressions."""
 from typing import List
 
-from automation import Automaton
+from automaton import automaton
+Automaton = automaton.Automaton
 
 def is_letter(symbol: str) -> bool:
         return symbol.isalpha() or symbol.isdigit()

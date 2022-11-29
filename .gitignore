@@ -1,8 +1,6 @@
 /.mypy_cache
-/database
 /.pytest_cache
-/automation/__pycache__
-/tests/__pycache__
+__pycache__
 /.pytest_cache
 automaton.gv
 automaton.gv.pdf

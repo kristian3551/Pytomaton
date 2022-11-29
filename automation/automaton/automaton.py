@@ -1,4 +1,5 @@
 """Module providing the crusial functionality for the project."""
+
 from __future__ import annotations
 from typing import Set, Dict, List
 import copy
