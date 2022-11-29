@@ -326,8 +326,6 @@ class Automaton:
 
     def determinize(self) -> Automaton:
         """Returns a determinized version of self"""
-        if self.is_deterministic():
-            return self
         result: Automaton = Automaton()
         result.alphabet = [letter for letter in self.alphabet]
         queue: List[List[State]] = []
