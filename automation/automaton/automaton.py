@@ -21,13 +21,12 @@ class Automaton:
         5. Minifying automaton
         6. etc"""
     def __init__(self) -> None:
-        self.alphabet: List[str] = []
-        self.starts: List[State] = []
+        self.alphabet: Set[str] = set()
+        self.starts: Set[State] = set()
         self.states: List[State] = []
         self.states_dict: Dict[str, int] = {}
-        self.transitions: Dict[State, Dict[str, List[State]]] = {}
-        self.finals: List[State] = []
-        self.reg_expr = ""
+        self.transitions: Dict[State, Dict[str, Set[State]]] = {}
+        self.finals: Set[State] = set()
 
     def add_state(self, label: str = '') -> None:
         """Function for adding state"""
@@ -40,8 +39,8 @@ class Automaton:
         index: int = self.states_dict[label] if label in self.states_dict else -1
         if index >= len(self.states) or index < 0:
             return False
-        self.finals = [state for state in self.finals if state is not self.states[index]]
-        self.starts = [state for state in self.starts if state is not self.states[index]]
+        self.finals = set([state for state in self.finals if state is not self.states[index]])
+        self.starts = set([state for state in self.starts if state is not self.states[index]])
         if self.states[index] in self.transitions:
             del self.transitions[self.states[index]]
         for state in self.transitions:
@@ -55,7 +54,7 @@ class Automaton:
         index: int = self.states_dict[label] if label in self.states_dict else -1
         if index < 0 or index >= len(self.states) or self.states[index] in self.finals:
             return False
-        self.finals.append(self.states[index])
+        self.finals.add(self.states[index])
         return True
 
     def make_state_unfinal(self, label: str) -> bool:
@@ -71,7 +70,7 @@ class Automaton:
         index: int = self.states_dict[label] if label in self.states_dict else -1
         if index < 0 or self.states[index] in self.starts:
             return False
-        self.starts.append(self.states[index])
+        self.starts.add(self.states[index])
         return True
 
     def remove_start(self, label: str) -> bool:
@@ -90,17 +89,17 @@ class Automaton:
         if idx2 < 0 or idx2 >= len(self.states):
             return False
         if letter not in self.alphabet:
-            self.alphabet.append(letter)
+            self.alphabet.add(letter)
         state_1: State = self.states[idx1]
         state_2: State = self.states[idx2]
         if state_1 not in self.transitions:
-            self.transitions[state_1] = {letter: [state_2]}
+            self.transitions[state_1] = {letter: set([state_2])}
         elif letter not in self.transitions[state_1]:
-            self.transitions[state_1][letter] = [state_2]
+            self.transitions[state_1][letter] = set([state_2])
         elif state_2 in self.transitions[state_1][letter]:
             return False
         else:
-            self.transitions[state_1][letter].append(state_2)
+            self.transitions[state_1][letter].add(state_2)
         return True
 
     def add_transition(self, label1: str, letter: str, label2: str) -> bool:
@@ -110,7 +109,7 @@ class Automaton:
         idx2: int = self.states_dict[label2] if label2 in self.states_dict else -1
         return self.__add_transition_by_index(idx1, letter, idx2)
 
-    def __add_transitions(self, label1: str, letter, states: List[State]) -> bool:
+    def __add_transitions(self, label1: str, letter, states: Set[State]) -> bool:
         """Adds many transitions at a time."""
         states_labels: List[str] = [state.label for state in states]
         for state_label in states_labels:
@@ -129,14 +128,14 @@ class Automaton:
         self.transitions[self.get_state(label1)][letter].remove(self.get_state(label2))
         return True
 
-    def __get_state_transitions_by_index(self, index: int) -> Dict[str, List[State]]:
+    def __get_state_transitions_by_index(self, index: int) -> Dict[str, Set[State]]:
         """Get transitions of state with index 'index'."""
         if index < 0 or index >= len(self.states):
             return {}
         state: State = self.states[index]
         return self.transitions[state] if state in self.transitions else {}
 
-    def get_state_transitions(self, state: State) -> Dict[str, List[State]]:
+    def get_state_transitions(self, state: State) -> Dict[str, Set[State]]:
         """Get transitions of state with index 'index'."""
         return self.__get_state_transitions_by_index(self.states_dict[state.label]\
             if state.label in self.states_dict else -1)
@@ -147,7 +146,7 @@ class Automaton:
         for letter in word:
             new_states: Set[State] = set()
             for state in states:
-                transitions: Dict[str, List[State]] = self.get_state_transitions(state)
+                transitions: Dict[str, Set[State]] = self.get_state_transitions(state)
                 if letter in transitions:
                     new_states = new_states | set(transitions[letter])
             states = new_states
@@ -163,7 +162,7 @@ class Automaton:
     def is_deterministic(self) -> bool:
         """Checks if automaton is deterministic."""
         for state in self.states:
-            state_transitions: Dict[str, List[State]] = self.get_state_transitions(state)
+            state_transitions: Dict[str, Set[State]] = self.get_state_transitions(state)
             for letter in self.alphabet:
                 if letter in state_transitions and len(state_transitions[letter]) > 1:
                     return False
@@ -173,7 +172,7 @@ class Automaton:
         """Checks if automaton is total (for each state for each
          letter exists transition from state with letter)"""
         for state in self.states:
-            state_transitions: Dict[str, List[State]] = self.get_state_transitions(state)
+            state_transitions: Dict[str, Set[State]] = self.get_state_transitions(state)
             for letter in self.alphabet:
                 if not letter in state_transitions:
                     return False
@@ -189,7 +188,7 @@ class Automaton:
         for letter in self.alphabet:
             self.__add_transition_by_index(trash_state_idx, letter, trash_state_idx)
         for state in self.states:
-            state_transitions: Dict[str, List[State]] = self.get_state_transitions(state)
+            state_transitions: Dict[str, Set[State]] = self.get_state_transitions(state)
             for letter in self.alphabet:
                 if not letter in state_transitions:
                     self.add_transition(state.label, letter, trash_label)
@@ -238,7 +237,7 @@ class Automaton:
             result.add_state(state.label)
         for final in result.finals:
             for start in other_auto.starts:
-                start_transitions: Dict[str, List[State]] = other_auto.transitions[start]\
+                start_transitions: Dict[str, Set[State]] = other_auto.transitions[start]\
                      if start in other_auto.transitions else {}
                 for letter in start_transitions:
                     result.__add_transitions(final.label, letter, start_transitions[letter])
@@ -247,7 +246,7 @@ class Automaton:
                 result.__add_transitions(state.label, letter, other_auto.transitions[state][letter])
 
         if not set(other_auto.starts).intersection(set(other_auto.finals)):
-            result.finals = []
+            result.finals = set()
         for final in other_auto.finals:
             result.make_state_final(final.label)
         return result
@@ -260,7 +259,7 @@ class Automaton:
         if not result.is_total():
             result.make_total()
         finals: Set[State] = set([final for final in result.finals])
-        result.finals = []
+        result.finals = set()
         for state in result.states:
             if not state in finals:
                 result.make_state_final(state.label)
@@ -271,12 +270,12 @@ class Automaton:
         result: Automaton = self.copy()
         for final in result.finals:
             for start in result.starts:
-                transitions: Dict[str, List[State]] = self.get_state_transitions(start)
+                transitions: Dict[str, Set[State]] = self.get_state_transitions(start)
                 for letter in transitions:
                     result.__add_transitions(final.label, letter, transitions[letter])
         start_label = str(len(result.states))
         result.add_state(start_label)
-        result.starts.append(result.get_state(start_label))
+        result.starts.add(result.get_state(start_label))
         result.make_state_final(start_label)
         return result
 
@@ -287,7 +286,7 @@ class Automaton:
         if not self.is_deterministic() or not other_auto.is_deterministic():
             raise ValueError("Automaton is not deterministic.")
         result: Automaton = Automaton()
-        result.alphabet = list(self.alphabet)
+        result.alphabet = set(self.alphabet)
         for state_1 in self.states:
             for state_2 in other_auto.states:
                 result.add_state(f"{state_1.label}x{state_2.label}")
@@ -298,9 +297,9 @@ class Automaton:
             tokens: List[str] = state.label.split("x")
             label1: str = tokens[0]
             label2: str = tokens[1]
-            transitions_1: Dict[str, List[State]] =\
+            transitions_1: Dict[str, Set[State]] =\
                  self.get_state_transitions(self.get_state(label1))
-            transitions_2: Dict[str, List[State]] =\
+            transitions_2: Dict[str, Set[State]] =\
                  other_auto.get_state_transitions(other_auto.get_state(label2))
             for letter in transitions_1:
                 if letter in transitions_2:
@@ -328,8 +327,8 @@ class Automaton:
     def determinize(self) -> Automaton:
         """Returns a determinized version of self"""
         result: Automaton = Automaton()
-        result.alphabet = [letter for letter in self.alphabet]
-        queue: List[List[State]] = []
+        result.alphabet = {letter for letter in self.alphabet}
+        queue: List[Set[State]] = []
         queue.append(self.starts)
         start_label: str = str(sorted(set([state.label for state in self.starts])))
         result.add_state(start_label)
@@ -337,12 +336,13 @@ class Automaton:
         if len([state for state in self.starts if state in self.finals]) > 0:
             result.make_state_final(start_label)
         while queue:
-            current: List[State] = queue.pop(0)
+            current: Set[State] = queue.pop(0)
             for letter in result.alphabet:
-                states_set: List[State] = []
+                states_set: Set[State] = set()
                 for state in current:
-                    states_set += self.transitions[state][letter] if state in self.transitions\
-                         and letter in self.transitions[state] else []
+                    transitions: Dict[str, Set[State]] = self.get_state_transitions(state)
+                    states_set = states_set.union(transitions[letter] if letter in transitions\
+                         else set())
                 set_label: str = str(sorted(set([state.label for state in states_set])))
                 if set_label not in result.states_dict:
                     queue.append(states_set)
@@ -368,7 +368,7 @@ class Automaton:
         for final in self.finals:
             result.set_start(final.label)
         for state in result.states:
-            transitions: Dict[str, List[State]] = self.get_state_transitions(state)
+            transitions: Dict[str, Set[State]] = self.get_state_transitions(state)
             for letter in transitions:
                 for res in transitions[letter]:
                     result.add_transition(res.label, letter, state.label)
@@ -395,8 +395,8 @@ class Automaton:
         return auto
 
     def __repr__(self) -> str:
-        return "--- Automaton:\n" + "States = " + str([el for el in self.states]) + \
-        "\nStarting states: " + str([el for el in self.starts]) \
+        return "--- Automaton:\n" + "States = " + str(self.states) + \
+        "\nStarting states: " + str(self.starts) \
             + "\nTransition function:\n" + "\n".join([f"--- {el} -> {self.transitions[el]}"\
                  for el in self.transitions]) + \
                 "\nFinal states: " + str(self.finals)
