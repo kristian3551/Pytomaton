@@ -26,6 +26,11 @@ class Controller:
             raise KeyError(NOT_FOUND_ERROR_MSG)
         del self.automatons[name]
         return True
+    def replace_automaton(self, name: str, auto: Automaton) -> bool:
+        if name not in self.automatons:
+            raise KeyError(NOT_FOUND_ERROR_MSG)
+        self.automatons[name] = auto
+        return True
     def get_automaton(self, name: str) -> Automaton:
         if name not in self.automatons:
             raise KeyError(AUTOMATON_ALREADY_EXISTS_MSG)
@@ -152,14 +157,21 @@ class Controller:
             raise KeyError(NOT_FOUND_ERROR_MSG)
         dot = graphviz.Digraph()
         auto: Automaton = self.automatons[name]
+        counter: int = 0
         for state in auto.states:
             if state in auto.finals:
                 if state in auto.starts:
-                    dot.node(state.label, shape="doublecircle", style="filled", fillcolor="green")
+                    dot.node(f"dummy{counter}", '', shape="none")
+                    dot.node(state.label, shape="doublecircle")
+                    dot.edge(f"dummy{counter}", state.label)
+                    counter += 1
                 else:
                     dot.node(state.label, shape="doublecircle")
             elif state in auto.starts:
-                dot.node(state.label, shape="circle", style="filled", fillcolor="green")
+                dot.node(f"dummy{counter}", '', shape="none")
+                dot.node(state.label, shape="circle")
+                dot.edge(f"dummy{counter}", state.label)
+                counter += 1
             else:
                 dot.node(state.label, shape="circle")
         for state in auto.transitions:

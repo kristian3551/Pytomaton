@@ -146,45 +146,41 @@ class Engine:
                 elif command == 'clear':
                     self.controller.clear()
                 elif tokens[1] == '=':
-                    if self.controller.contains(tokens[0]):
-                        self.controller.remove_automaton(tokens[0])
                     if tokens[2] == 'from' and tokens[3] == 'regex':
-                        self.controller.add_automaton(tokens[0],\
+                        self.controller.replace_automaton(tokens[0],\
                             self.controller.from_regex(tokens[4]))
                     elif tokens[2] == 'empty':
-                        self.controller.add_automaton(tokens[0],\
+                        self.controller.replace_automaton(tokens[0],\
                             self.controller.empty_automaton())
                     elif tokens[2] == 'concat':
-                        self.controller.add_automaton(tokens[0],\
+                        self.controller.replace_automaton(tokens[0],\
                             self.controller.concat(tokens[3], tokens[4]))
                     elif tokens[2] == 'union':
-                        self.controller.add_automaton(tokens[0],\
+                        self.controller.replace_automaton(tokens[0],\
                             self.controller.union(tokens[3], tokens[4]))
                     elif tokens[2] == 'star':
-                        self.controller.add_automaton(tokens[0],\
+                        self.controller.replace_automaton(tokens[0],\
                             self.controller.star(tokens[3]))
                     elif tokens[2] == 'minimize':
-                        self.controller.add_automaton(tokens[0],\
+                        self.controller.replace_automaton(tokens[0],\
                             self.controller.minimize(tokens[3]))
                     elif tokens[2] == 'determinize':
-                        self.controller.add_automaton(tokens[0],\
+                        self.controller.replace_automaton(tokens[0],\
                             self.controller.determinize(tokens[3]))
                     elif tokens[2] == 'reverse':
-                        self.controller.add_automaton(tokens[0],\
+                        self.controller.replace_automaton(tokens[0],\
                             self.controller.reverse(tokens[3]))
                     elif tokens[2] == 'total':
-                        self.controller.add_automaton(tokens[0],\
+                        self.controller.replace_automaton(tokens[0],\
                             self.controller.total(tokens[3]))
                     elif tokens[2] == 'complement':
-                        self.controller.add_automaton(tokens[0],\
+                        self.controller.replace_automaton(tokens[0],\
                             self.controller.complement(tokens[3]))
                     elif tokens[2] == 'intersect':
-                        self.controller.add_automaton(tokens[0],\
+                        self.controller.replace_automaton(tokens[0],\
                             self.controller.intersection(tokens[3], tokens[4]))
                     else:
-                        if self.controller.contains(tokens[0]):
-                            self.controller.remove_automaton(tokens[0])
-                        self.controller.add_automaton(tokens[0],\
+                        self.controller.replace_automaton(tokens[0],\
                              self.controller.get_automaton(tokens[2]))
                     self.has_changes = True
                 else:
