@@ -1,11 +1,10 @@
 """Module for managing automatons."""
 
-from typing import Dict, List, Set, Tuple
-from automaton import automaton
-from regexpr.reg_expr import RegExpr
 import os
+from typing import Dict, List, Set, Tuple
+from automaton.automaton import Automaton
+from regexpr.reg_expr import RegExpr
 import graphviz
-Automaton = automaton.Automaton
 
 NOT_FOUND_ERROR_MSG: str = "Automaton is not found!"
 AUTOMATON_ALREADY_EXISTS_MSG: str = "Automaton already exists!"
@@ -13,28 +12,34 @@ DEFAULT_DATABASE_PATH: List[str] = ['database', 'automatons.txt']
 INVALID_NAME_MSG: str = "Name is invalid!"
 
 class Controller:
+    """Class that holds the functionalities wrappers and the main logic of the application."""
     def __init__(self) -> None:
         self.automatons: Dict[str, Automaton] = {}
-    def add_automaton(self, name: str, automaton: Automaton) -> bool:
+    def add_automaton(self, name: str, automat: Automaton) -> bool:
+        """Adds automaton."""
         if name in self.automatons:
             raise KeyError(AUTOMATON_ALREADY_EXISTS_MSG)
         if not name:
             raise KeyError(INVALID_NAME_MSG)
-        self.automatons[name] = automaton
+        self.automatons[name] = automat
         return True
     def remove_automaton(self, name: str) -> bool:
+        """Removes automaton."""
         if name not in self.automatons:
             raise KeyError(NOT_FOUND_ERROR_MSG)
         del self.automatons[name]
         return True
     def replace_or_add_automaton(self, name: str, auto: Automaton) -> bool:
+        """Replaces or adds automaton."""
         self.automatons[name] = auto
         return True
     def get_automaton(self, name: str) -> Automaton:
+        """Gets automaton by name."""
         if name not in self.automatons:
-            raise KeyError(AUTOMATON_ALREADY_EXISTS_MSG)
+            raise KeyError(NOT_FOUND_ERROR_MSG)
         return self.automatons[name]
     def add_state(self, name: str, label: str) -> bool:
+        """Adds state with label {label} to automaton with {name}."""
         if not name in self.automatons:
             raise KeyError(NOT_FOUND_ERROR_MSG)
         self.automatons[name].add_state(label)
@@ -154,7 +159,7 @@ class Controller:
     def show_automaton(self, name: str) -> None:
         if name not in self.automatons:
             raise KeyError(NOT_FOUND_ERROR_MSG)
-        dot = graphviz.Digraph()
+        dot = graphviz.Digraph(format='png')
         auto: Automaton = self.automatons[name]
         counter: int = 0
         for state in auto.states:
@@ -184,7 +189,7 @@ class Controller:
                     if (state.label, target.label) not in added_edges:
                         dot.edge(state.label, target.label, label=f" {', '.join(sorted(letters))}")
                         added_edges.add((state.label, target.label))
-        dot.render('automaton.gv', view=True)
+        dot.render('automaton.gv')
     def clear(self) -> None:
         os.system('cls')
     def print(self) -> None:

@@ -2,12 +2,11 @@
 
 from typing import List
 from controller import controller
-Controller = controller.Controller
 
 class Engine:
     """The console app itself."""
     def __init__(self) -> None:
-        self.controller: Controller = Controller()
+        self.controller: controller.Controller =  controller.Controller()
         self.has_changes = False
     def __tokenize(self, line: str) -> List[str]:
         return line.split(' ')
@@ -33,7 +32,7 @@ class Engine:
         12. union <name1> <name2>                              -> Prints the automaton with language L(<name1>) U L(<name2>).
         13. concat <name1> <name2>                             -> Self explanatory.
         14. star <name>                                        -> Prints the automaton with language L(<name>)*.
-        15. complement <name>                                  -> Prints the automaton with language sigma* \ L(<name>).
+        15. complement <name>                                  -> Prints the automaton with language sigma*\\L(<name>).
         16. intersect <name1> <name2>                          -> Prints the automaton with language L(<name1>) ^ L(<name2>).
         17. determinize <name>                                 -> Prints the determinized version of automaton <name>.
         18. minimize <name>                                    -> Prints the minimized (and determinized) version of automaton <name>.
@@ -62,7 +61,8 @@ class Engine:
                         else:
                             print("Automaton added unsuccessfully!")
                     elif tokens[2] == 'empty':
-                        if self.controller.add_automaton(tokens[1], self.controller.empty_automaton()):
+                        if self.controller.add_automaton(tokens[1],\
+                             self.controller.empty_automaton()):
                             self.has_changes = True
                             print(f'Automaton {tokens[1]} added successfully')
                         else:
@@ -98,7 +98,8 @@ class Engine:
                     if self.controller.add_transition(tokens[1], tokens[2], tokens[3], tokens[4]):
                         self.has_changes = True
                 elif command == 'removetransition':
-                    if self.controller.remove_transition(tokens[1], tokens[2], tokens[3], tokens[4]):
+                    if self.controller.remove_transition(tokens[1], tokens[2],\
+                         tokens[3], tokens[4]):
                         self.has_changes = True
                 elif command == 'acceptsword':
                     word: str = tokens[2] if len(tokens) > 2 else ''

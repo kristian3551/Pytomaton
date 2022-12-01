@@ -1,11 +1,11 @@
 """Module for working with regular expressions."""
 from typing import List
 
-from automaton import automaton
-Automaton = automaton.Automaton
+from automaton.automaton import Automaton
 
 def is_letter(symbol: str) -> bool:
-        return symbol.isalpha() or symbol.isdigit()
+    """Checks if symbol is from alphabet."""
+    return symbol.isalpha() or symbol.isdigit()
 
 class RegExpr:
     """Class for working with regular expressions."""
@@ -17,12 +17,12 @@ class RegExpr:
         """Function for checking if regex is valid."""
         return self.__validate(self.regex)
 
-    def convert_in_RPN(self) -> str:
+    def convert_in_rpn(self) -> str:
         """Converts regex into reverse polish notation."""
         output: List[str] = []
         stack: List[str] = []
-        for i in range(len(self.regex)):
-            symbol: str = self.regex[i]
+        for i, value in enumerate(self.regex):
+            symbol: str = value
             if symbol.isalpha() or symbol.isdigit() or symbol == '$':
                 output.append(symbol)
             elif symbol == '(':
@@ -40,12 +40,13 @@ class RegExpr:
             if i != len(self.regex) - 1:
                 left: str = self.regex[i]
                 right: str = self.regex[i + 1]
-                if is_letter(left) and (right == '(' or is_letter(right))\
-                    or left == ')' and (is_letter(right) or right == ')')\
-                        or left == '*' and (right == '(' or is_letter(right)):
-                        while stack and (stack[-1] == '.' or stack[-1] == '*'):
-                            output.append(stack.pop())
-                        stack.append('.')
+                cond_1: bool = is_letter(left) and (right == '(' or is_letter(right))
+                cond_2: bool = left == ')' and (is_letter(right) or right == ')')
+                cond_3: bool = left == '*' and (right == '(' or is_letter(right))
+                if cond_1 or cond_2 or cond_3:
+                    while stack and (stack[-1] == '.' or stack[-1] == '*'):
+                        output.append(stack.pop())
+                    stack.append('.')
         while stack:
             output.append(stack.pop())
         return "".join(output)
@@ -62,8 +63,8 @@ class RegExpr:
             return True
         if current[-1] == '*' and self.__validate(current[0:-1]):
             return True
-        for i in range(len(current)):
-            symbol: str = current[i]
+        for i, value in enumerate(current):
+            symbol: str = value
             if symbol == '+' and self.__validate(current[0:i]) and self.__validate(current[i+1:]):
                 return True
         for i in range(len(current)):
@@ -76,13 +77,13 @@ class RegExpr:
         # if not self.validate():
         #     print("Regular expression is NOT valid!")
         #     return Automaton()
-        regex_RPN: str = self.convert_in_RPN()
+        regex_rpn: str = self.convert_in_rpn()
         stack: List[Automaton] = []
-        for symbol in regex_RPN:
+        for symbol in regex_rpn:
             if symbol == '+':
-                a: Automaton = stack.pop()
-                b: Automaton = stack.pop()
-                stack.append(a.union(b))
+                first: Automaton = stack.pop()
+                second: Automaton = stack.pop()
+                stack.append(first.union(second))
             elif symbol == '*':
                 starred: Automaton = stack.pop()
                 stack.append(starred.star())
