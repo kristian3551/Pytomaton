@@ -39,8 +39,8 @@ class Automaton:
         index: int = self.states_dict[label] if label in self.states_dict else -1
         if index >= len(self.states) or index < 0:
             return False
-        self.finals = set([state for state in self.finals if state is not self.states[index]])
-        self.starts = set([state for state in self.starts if state is not self.states[index]])
+        self.finals = {state for state in self.finals if state is not self.states[index]}
+        self.starts = {state for state in self.starts if state is not self.states[index]}
         if self.states[index] in self.transitions:
             del self.transitions[self.states[index]]
         for state in self.transitions:
@@ -48,6 +48,7 @@ class Automaton:
                 if self.states[index] in self.transitions[state][letter]:
                     self.transitions[state][letter].remove(self.states[index])
         self.states.pop(index)
+        del self.states_dict[label]
         return True
 
     def make_state_final(self, label: str) -> bool:
@@ -296,12 +297,10 @@ class Automaton:
                 result.set_start(f"{state_1.label}x{state_2.label}")
         for state in result.states:
             tokens: List[str] = state.label.split("x")
-            label1: str = tokens[0]
-            label2: str = tokens[1]
             transitions_1: Dict[str, Set[State]] =\
-                 self.get_state_transitions(self.get_state(label1))
+                 self.get_state_transitions(self.get_state(tokens[0]))
             transitions_2: Dict[str, Set[State]] =\
-                 other_auto.get_state_transitions(other_auto.get_state(label2))
+                 other_auto.get_state_transitions(other_auto.get_state(tokens[1]))
             for letter in transitions_1:
                 if letter in transitions_2:
                     for s_1 in transitions_1[letter]:
