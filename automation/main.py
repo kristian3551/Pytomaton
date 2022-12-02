@@ -1,6 +1,6 @@
-"""Entry point for the console app."""
+"""Entry point for the GUI app."""
 
-from engine import Engine
+from app import App
 
-engine: Engine = Engine()
-engine.run()
+app = App()
+app.run()
