@@ -1,2 +1,2 @@
 # Pytomaton
-Library working with finate automations written in Python
+Library working with finate automatons written in Python

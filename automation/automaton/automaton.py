@@ -9,6 +9,9 @@ class State:
     """State in a nutshell"""
     def __init__(self, label: str = '') -> None:
         self.label = label
+    def change_label(self, label: str):
+        """Function that changes labels"""
+        self.label = label
     def __repr__(self) -> str:
         return self.label
 
@@ -43,10 +46,10 @@ class Automaton:
         self.starts = {state for state in self.starts if state is not self.states[index]}
         if self.states[index] in self.transitions:
             del self.transitions[self.states[index]]
-        for state in self.transitions:
-            for letter in self.transitions[state]:
-                if self.states[index] in self.transitions[state][letter]:
-                    self.transitions[state][letter].remove(self.states[index])
+        for state, transitions in self.transitions.items():
+            for letter in transitions:
+                if self.states[index] in transitions[letter]:
+                    transitions[letter].remove(self.states[index])
         self.states.pop(index)
         del self.states_dict[label]
         return True
@@ -176,7 +179,7 @@ class Automaton:
         for state in self.states:
             state_transitions: Dict[str, Set[State]] = self.get_state_transitions(state)
             for letter in self.alphabet:
-                if not letter in state_transitions:
+                if not letter in state_transitions or not state_transitions[letter]:
                     return False
         return True
 
@@ -306,13 +309,14 @@ class Automaton:
                     for s_1 in transitions_1[letter]:
                         for s_2 in transitions_2[letter]:
                             result.add_transition(state.label, letter, f"{s_1.label}x{s_2.label}")
-        for state_1 in self.starts:
-            for state_2 in other_auto.starts:
-                result.set_start(f"{state_1.label}x{state_2.label}")
-        for final_1 in self.finals:
-            for final_2 in other_auto.finals:
-                result.make_state_final(f"{final_1.label}x{final_2.label}")
-        result.rename()
+        result.starts = {state for state in result.states
+            if self.states[self.states_dict[state.label.split('x')[0]]] in self.starts
+                and other_auto.states[self.states_dict[state.label.split('x')[1]]]\
+                    in other_auto.starts}
+        result.finals = {state for state in result.states
+            if self.states[self.states_dict[state.label.split('x')[0]]] in self.finals
+                and other_auto.states[self.states_dict[state.label.split('x')[1]]]\
+                    in other_auto.finals}
         return result
 
     def rename(self) -> None:
@@ -330,7 +334,7 @@ class Automaton:
         result.alphabet = {letter for letter in self.alphabet}
         queue: List[Set[State]] = []
         queue.append(self.starts)
-        start_label: str = str(sorted(set([state.label for state in self.starts])))
+        start_label: str = str(sorted({state.label for state in self.starts}))
         result.add_state(start_label)
         result.set_start(start_label)
         if len([state for state in self.starts if state in self.finals]) > 0:

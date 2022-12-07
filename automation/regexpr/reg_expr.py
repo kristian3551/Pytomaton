@@ -55,11 +55,10 @@ class RegExpr:
         """Helper for validating regex. It follows the inductive definition of building regexes."""
         # r -> r* | (r)
         # r1, r2 -> r1.r2 | r1 + r2
-        if current == '$' or is_letter(current):
-            return True
-        if current == '':
+        if not current:
             return False
-        if current[0] == '(' and current[-1] == ')' and self.__validate(current[1:-1]):
+        if current == '$' or is_letter(current) or\
+            current[0] == '(' and current[-1] == ')' and self.__validate(current[1:-1]):
             return True
         if current[-1] == '*' and self.__validate(current[0:-1]):
             return True

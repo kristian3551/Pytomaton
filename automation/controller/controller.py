@@ -45,93 +45,116 @@ class Controller:
         self.automatons[name].add_state(label)
         return True
     def remove_start(self, name: str, label: str) -> bool:
+        """Removes state from starts of autoomaton <name>"""
         if not name in self.automatons:
             raise KeyError(NOT_FOUND_ERROR_MSG)
         self.automatons[name].remove_start(label)
         return True
     def print_automaton(self, name: str) -> None:
+        """Prints __repr__ of automaton <name>"""
         if not name in self.automatons:
             raise KeyError(NOT_FOUND_ERROR_MSG)
         print(self.automatons[name])
     def remove_state(self, name: str, label: str) -> bool:
+        """Removes state of atuomaton <name>"""
         if not name in self.automatons:
             raise KeyError(NOT_FOUND_ERROR_MSG)
         self.automatons[name].remove_state(label)
         return True
     def make_state_final(self, name: str, label: str) -> bool:
+        """Adds state from finals of automaton <name>"""
         if not name in self.automatons:
             raise KeyError(NOT_FOUND_ERROR_MSG)
         return self.automatons[name].make_state_final(label)
     def make_state_unfinal(self, name: str, label: str) -> bool:
+        """Removes state from finals of atuomaton <name>"""
         if not name in self.automatons:
             raise KeyError(NOT_FOUND_ERROR_MSG)
         return self.automatons[name].make_state_unfinal(label)
     def set_start(self, name: str, label: str) -> bool:
+        """Adds start state to automaton <name>"""
         if not name in self.automatons:
             raise KeyError(NOT_FOUND_ERROR_MSG)
         return self.automatons[name].set_start(label)
     def add_transition(self, name: str, label1: str, letter: str, label2: str) -> bool:
+        """Adds transition (label1, letter) -> label2 to automaton <name>"""
         if not name in self.automatons:
             raise KeyError(NOT_FOUND_ERROR_MSG)
         return self.automatons[name].add_transition(label1, letter, label2)
     def remove_transition(self, name: str, label1: str, letter: str, label2: str) -> bool:
+        """Removes transition (label1, letter) -> label2 from automaton <name>"""
         if not name in self.automatons:
             raise KeyError(NOT_FOUND_ERROR_MSG)
         return self.automatons[name].remove_transition(label1, letter, label2)
     def accepts_word(self, name: str, word: str) -> bool:
+        """Returns if <word> is in L(<name>)"""
         if not name in self.automatons:
             raise KeyError(NOT_FOUND_ERROR_MSG)
         return self.automatons[name].accepts_word(word)
     def make_total(self, name: str) -> None:
+        """Modifies <name> to be total."""
         if not name in self.automatons:
             raise KeyError(NOT_FOUND_ERROR_MSG)
         self.automatons[name].make_total()
     def total(self, name: str) -> Automaton:
+        """Returns a total copy of automaton <name>"""
         if not name in self.automatons:
             raise KeyError(NOT_FOUND_ERROR_MSG)
         return self.automatons[name].total()
     def union(self, name1: str, name2: str) -> Automaton:
+        """Returns a copy of automaton with language L(<name1>) U L(<name2>)"""
         if name1 not in self.automatons or name2 not in self.automatons:
             raise KeyError(NOT_FOUND_ERROR_MSG)
         return self.automatons[name1].union(self.automatons[name2])
     def concat(self, name1: str, name2: str) -> Automaton:
+        """Returns a copy of automaton with language L(<name1>) . L(<name2>)"""
         if name1 not in self.automatons or name2 not in self.automatons:
             raise KeyError(NOT_FOUND_ERROR_MSG)
         return self.automatons[name1].concat(self.automatons[name2])
     def star(self, name: str) -> Automaton:
+        """Returns a copy of automaton with language L(<name1>) U L(<name2>)"""
         if name not in self.automatons:
             raise KeyError(NOT_FOUND_ERROR_MSG)
         return self.automatons[name].star()
     def complement(self, name: str) -> Automaton:
+        """Returns a copy of automaton with language sigma*\\L(<name>)"""
         if name not in self.automatons:
             raise KeyError(NOT_FOUND_ERROR_MSG)
         return self.automatons[name].complement()
     def intersection(self, name1: str, name2: str) -> Automaton:
+        """Returns a copy of automaton with language L(<name1>) ^ L(<name2>)"""
         if name1 not in self.automatons or name2 not in self.automatons:
             raise KeyError(NOT_FOUND_ERROR_MSG)
         return self.automatons[name1].intersection(self.automatons[name2])
     def determinize(self, name: str) -> Automaton:
+        """Returns a determinized version of <name>"""
         if name not in self.automatons:
             raise KeyError(NOT_FOUND_ERROR_MSG)
         return self.automatons[name].determinize()
     def minimize(self, name: str) -> Automaton:
+        """Returns a minimized version of <name>"""
         if name not in self.automatons:
             raise KeyError(NOT_FOUND_ERROR_MSG)
         return self.automatons[name].minimize()
     def reverse(self, name: str) -> Automaton:
+        """Returns a reversed copy version of <name>"""
         if name not in self.automatons:
             raise KeyError(NOT_FOUND_ERROR_MSG)
         return self.automatons[name].reverse()
     def from_regex(self, regex: str) -> Automaton:
+        """Creates automaton by regex and returns it"""
         return RegExpr(regex).compile()
     def empty_automaton(self) -> Automaton:
+        """Returns an automaton with language {}"""
         return Automaton()
     def save_in_file(self) -> None:
+        """Saves all automatons in right format in .txt file with location DEFAULT_DATABASE_PATH"""
         file = open(os.path.join(*DEFAULT_DATABASE_PATH), 'w', encoding="UTF-8")
         file.writelines(''.join([f"{name}\n" + auto.stream_format()\
              for name, auto in self.automatons.items()]))
         file.close()
     def load_from_file(self) -> None:
+        """Adds all automatons from file to the automaton repository."""
         self.automatons = {}
         file = open(os.path.join(*DEFAULT_DATABASE_PATH), encoding="UTF-8")
         line = file.readline()
@@ -157,27 +180,22 @@ class Controller:
             line = file.readline()
         file.close()
     def show_automaton(self, name: str) -> None:
+        """Creates automaton.png picture of automaton <name> using GraphViz."""
         if name not in self.automatons:
             raise KeyError(NOT_FOUND_ERROR_MSG)
         dot = graphviz.Digraph(format='png')
         auto: Automaton = self.automatons[name]
         counter: int = 0
         for state in auto.states:
-            if state in auto.finals:
-                if state in auto.starts:
-                    dot.node(f"dummy{counter}", '', shape="none")
-                    dot.node(state.label, shape="doublecircle")
-                    dot.edge(f"dummy{counter}", state.label)
-                    counter += 1
-                else:
-                    dot.node(state.label, shape="doublecircle")
-            elif state in auto.starts:
+            if state in auto.starts:
                 dot.node(f"dummy{counter}", '', shape="none")
-                dot.node(state.label, shape="circle")
+                dot.node(state.label, shape="circle" if state not in auto.finals\
+                     else "doublecircle")
                 dot.edge(f"dummy{counter}", state.label)
                 counter += 1
             else:
-                dot.node(state.label, shape="circle")
+                dot.node(state.label, shape="circle" if state not in auto.finals\
+                     else "doublecircle")
         for state in auto.transitions:
             added_edges: Set[Tuple[str, str]] = set()
             for letter in auto.transitions[state]:
@@ -190,12 +208,12 @@ class Controller:
                         dot.edge(state.label, target.label, label=f" {', '.join(sorted(letters))}")
                         added_edges.add((state.label, target.label))
         dot.render('automaton.gv')
-    def clear(self) -> None:
-        os.system('cls')
     def print(self) -> None:
-        for name in self.automatons:
+        """Prints all automatons' __repr__-s from repository."""
+        for name, auto in self.automatons.items():
             print('-------------------------')
             print("Name: ", name, '\n')
-            print(self.automatons[name])
+            print(auto)
     def contains(self, name: str) -> bool:
+        """Returns if automaton <name> is found in automaton repository."""
         return name in self.automatons

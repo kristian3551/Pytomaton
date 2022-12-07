@@ -2,6 +2,7 @@
 
 from typing import List
 from controller import controller
+import os
 
 class Engine:
     """The console app itself."""
@@ -147,7 +148,7 @@ class Engine:
                         line = ''
                         print("Goodbye!")
                 elif command == 'clear':
-                    self.controller.clear()
+                    os.system('cls')
                 elif tokens[1] == '=':
                     if tokens[2] == 'from' and tokens[3] == 'regex':
                         self.controller.replace_or_add_automaton(tokens[0],\
