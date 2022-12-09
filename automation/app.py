@@ -1,7 +1,7 @@
 """The actual GUI app."""
 
 from tkinter import ttk, PhotoImage, Tk
-from controller.controller import Controller
+from automation.controller.controller import Controller
 
 # Control section
 

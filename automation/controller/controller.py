@@ -2,8 +2,8 @@
 
 import os
 from typing import Dict, List, Set, Tuple
-from automaton.automaton import Automaton
-from regexpr.reg_expr import RegExpr
+from automation.automaton.automaton import Automaton
+from automation.regexpr.reg_expr import RegExpr
 import graphviz
 
 NOT_FOUND_ERROR_MSG: str = "Automaton is not found!"
@@ -19,8 +19,6 @@ class Controller:
         """Adds automaton."""
         if name in self.automatons:
             raise KeyError(AUTOMATON_ALREADY_EXISTS_MSG)
-        if not name:
-            raise KeyError(INVALID_NAME_MSG)
         self.automatons[name] = automat
         return True
     def remove_automaton(self, name: str) -> bool:

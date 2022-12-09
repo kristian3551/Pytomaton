@@ -1,7 +1,7 @@
 """Module for working with regular expressions."""
 from typing import List
 
-from automaton.automaton import Automaton
+from automation.automaton.automaton import Automaton
 
 def is_letter(symbol: str) -> bool:
     """Checks if symbol is from alphabet."""
