@@ -3,9 +3,8 @@
 from tkinter import ttk, PhotoImage, Tk
 from automation.controller.controller import Controller
 
-# Control section
-
 class App:
+    """Main class for the application"""
     def __init__(self) -> None:
         self.root = Tk()
         self.root.geometry(newGeometry="700x700")
@@ -20,18 +19,23 @@ class App:
         self.operation_section: OperationSection = OperationSection(self.root, self)
 
     def set_message(self, message):
+        """Function that sets the top message label with text={message}."""
         if self.message_label:
             self.message_label.grid_forget()
         self.message_label = ttk.Label(self.root, text=message)
         self.message_label.grid()
         self.message_label.grid(row=0)
     def change_name(self, name):
+        """Function that changes current automaton name."""
         self.current_auto_name = name
     def run(self):
+        """Function that starts the application."""
         self.root.mainloop()
 
 class ControlSection:
-    def __init__(self, frame, outer_section) -> None:
+    """Class that handles all widgets and logic for saving, loading
+    or creating automatons."""
+    def __init__(self, frame, outer_section: App) -> None:
         self.outer_section = outer_section
         self.control_section = ttk.Frame(frame)
         self.name_entry = ttk.Entry(self.control_section, width=50)
@@ -56,9 +60,13 @@ class ControlSection:
         self.control_section.grid(row=1)
 
     def hide_image(self):
+        """Function that removes automaton picture from display."""
         if self.outer_section.operation_section.section:
             self.outer_section.operation_section.section.grid_forget()
+
     def load_image(self):
+        """Function that triggers automaton picture creating and loads
+        it in the operation section."""
         if self.outer_section.operation_section.auto_image_label:
             self.outer_section.operation_section.auto_image_label.grid_forget()
             self.outer_section.operation_section.name_label.grid_forget()
@@ -72,7 +80,9 @@ class ControlSection:
             text=f"Name: {self.name_entry.get()}")
         self.outer_section.operation_section.name_label.grid(row=0, column=2)
         self.outer_section.root.update_idletasks()
-    def load_auto(self, name):
+
+    def load_auto(self, name: str) -> None:
+        """Function that opens the operation section."""
         try:
             self.outer_section.controller.show_automaton(name)
             self.outer_section.change_name(name)
@@ -84,6 +94,8 @@ class ControlSection:
             self.outer_section.set_message(error.args[0])
 
     def create_auto(self, name: str, operation: str) -> None:
+        """Function that creates automaton in controller and displays
+        the operation section."""
         try:
             self.outer_section.controller.replace_or_add_automaton(name,
                 self.outer_section.controller.from_regex(operation))
@@ -92,7 +104,9 @@ class ControlSection:
         except KeyError as error:
             self.outer_section.set_message(error.args[0])
 
-    def remove_auto(self, name):
+    def remove_auto(self, name: str) -> None:
+        """Function that removes automaton in controller and hides
+        the operation section."""
         try:
             self.outer_section.controller.remove_automaton(name)
             if self.outer_section.current_auto_name == name:
@@ -103,16 +117,17 @@ class ControlSection:
             self.outer_section.set_message(error.args[0])
 
     def save_auto(self):
+        """Function that saves automatons from controller to files."""
         try:
             self.outer_section.controller.save_in_file()
             self.outer_section.set_message("Automatons saved successfully.")
         except KeyError as error:
             self.outer_section.set_message(error.args[0])
 
-# Construction section
-
 class ConstructionSection:
-    def __init__(self, frame, outer_section) -> None:
+    """Class that handles all the logic behind
+    performing basic automatons constructions."""
+    def __init__(self, frame, outer_section: App) -> None:
         self.construction_section = ttk.Frame(frame)
 
         self.outer_section = outer_section
@@ -156,7 +171,7 @@ class ConstructionSection:
         self.complement_button.grid(row=2, column=4)
         self.construction_section.grid(row=2)
 
-    def complement(self, name):
+    def complement(self, name: str) -> None:
         try:
             self.outer_section.controller.replace_or_add_automaton(name,
                 self.outer_section.controller.complement(name))
@@ -165,7 +180,7 @@ class ConstructionSection:
         except KeyError as error:
             self.outer_section.set_message(error.args[0])
 
-    def determinize(self, name):
+    def determinize(self, name: str):
         try:
             self.outer_section.controller.replace_or_add_automaton(name,
                 self.outer_section.controller.determinize(name))
@@ -174,7 +189,7 @@ class ConstructionSection:
         except KeyError as error:
             self.outer_section.set_message(error.args[0])
 
-    def total(self, name):
+    def total(self, name: str):
         try:
             self.outer_section.controller.replace_or_add_automaton(name,
                 self.outer_section.controller.determinize(name))
@@ -183,7 +198,7 @@ class ConstructionSection:
         except KeyError as error:
             self.outer_section.set_message(error.args[0])
 
-    def concat(self, name1, name2):
+    def concat(self, name1: str, name2: str):
         try:
             self.outer_section.controller.replace_or_add_automaton(name1,
                 self.outer_section.controller.intersection(name1, name2))
@@ -192,7 +207,7 @@ class ConstructionSection:
         except KeyError as error:
             self.outer_section.set_message(error.args[0])
 
-    def minimize(self, name):
+    def minimize(self, name: str):
         try:
             self.outer_section.controller.replace_or_add_automaton(name,
             self.outer_section.controller.minimize(name))
@@ -201,7 +216,7 @@ class ConstructionSection:
         except KeyError as error:
             self.outer_section.set_message(error.args[0])
 
-    def intersect(self, name1, name2):
+    def intersect(self, name1: str, name2: str):
         try:
             self.outer_section.controller.replace_or_add_automaton(name1,
             self.outer_section.controller.intersection(name1, name2))
@@ -212,7 +227,7 @@ class ConstructionSection:
         except ValueError as error:
             self.outer_section.set_message(error.args[0])
 
-    def union(self, name1, name2):
+    def union(self, name1: str, name2: str):
         try:
             self.outer_section.controller.replace_or_add_automaton(name1,
             self.outer_section.controller.union(name1, name2))
@@ -221,7 +236,7 @@ class ConstructionSection:
         except KeyError as error:
             self.outer_section.set_message(error.args[0])
 
-    def star(self, name):
+    def star(self, name: str):
         try:
             self.outer_section.controller.replace_or_add_automaton(name,
              self.outer_section.controller.star(name))
@@ -233,7 +248,8 @@ class ConstructionSection:
     # Operation section
 
 class OperationSection:
-    def __init__(self, frame, outer_section) -> None:
+    """Class that handles"""
+    def __init__(self, frame, outer_section: App) -> None:
         self.section = ttk.Frame(frame)
         self.outer_section = outer_section
         self.auto_image_label = ttk.Label(self.section)
@@ -244,10 +260,9 @@ class OperationSection:
         self.input_section = InputSection(self.section, self)
         self.buttons_section = ButtonSection(self.section, self)
 
-    # Input section
-
 class InputSection:
-    def __init__(self, frame, outer_section: OperationSection) -> None:
+    """Class that handles state and transition input."""
+    def __init__(self, frame: ttk.Frame, outer_section: OperationSection) -> None:
         self.outer_section = outer_section
         self.input_section = ttk.Frame(frame)
         self.accepts_word_entry = ttk.Entry(self.input_section, width=30)
@@ -273,10 +288,10 @@ class InputSection:
                  else "Word is REJECTED")
         except KeyError as error:
             self.outer_section.outer_section.set_message(error.args[0])
-# Button section
 
 class ButtonSection:
-    def __init__(self, frame, outer_section: OperationSection) -> None:
+    """Class that handles basic automatons operations (managing state, transitions, etc.)."""
+    def __init__(self, frame: ttk.Frame, outer_section: OperationSection) -> None:
         self.buttons_section = ttk.Frame(frame)
         self.outer_section = outer_section
         self.remove_state_button = ttk.Button(self.buttons_section, text="Remove state",
@@ -310,10 +325,10 @@ class ButtonSection:
         self.remove_transition_button.grid(row=6, column=2)
         self.buttons_section.grid(row=4, column=2, padx=5)
 
-    def add_transition(self, raw):
+    def add_transition(self, raw: str):
         try:
             control_section = self.outer_section.outer_section.control_section
-            controller = self.outer_section.outer_section.c
+            controller = self.outer_section.outer_section.controller
             current_auto_name = self.outer_section.outer_section.current_auto_name
             tokens = raw.split(' ')
             controller.add_transition(current_auto_name, tokens[0], tokens[1], tokens[2])
@@ -324,7 +339,7 @@ class ButtonSection:
         except IndexError:
             self.outer_section.outer_section.set_message("Invalid input!")
 
-    def remove_transition(self, raw):
+    def remove_transition(self, raw: str):
         try:
             control_section = self.outer_section.outer_section.control_section
             controller = self.outer_section.outer_section.controller
@@ -338,7 +353,7 @@ class ButtonSection:
         except IndexError:
             self.outer_section.outer_section.set_message("Invalid input!")
 
-    def remove_final(self, label):
+    def remove_final(self, label: str):
         try:
             control_section = self.outer_section.outer_section.control_section
             controller = self.outer_section.outer_section.controller
@@ -349,7 +364,7 @@ class ButtonSection:
         except KeyError as error:
             self.outer_section.outer_section.set_message(error.args[0])
 
-    def add_final(self, label):
+    def add_final(self, label: str):
         try:
             control_section = self.outer_section.outer_section.control_section
             controller = self.outer_section.outer_section.controller
@@ -361,7 +376,7 @@ class ButtonSection:
         except KeyError as error:
             self.outer_section.outer_section.set_message(error.args[0])
 
-    def add_start(self, label):
+    def add_start(self, label: str):
         try:
             control_section = self.outer_section.outer_section.control_section
             controller = self.outer_section.outer_section.controller
@@ -373,7 +388,7 @@ class ButtonSection:
         except KeyError as error:
             self.outer_section.outer_section.set_message(error.args[0])
 
-    def remove_start(self, label):
+    def remove_start(self, label: str):
         try:
             control_section = self.outer_section.outer_section.control_section
             controller = self.outer_section.outer_section.controller
@@ -385,7 +400,7 @@ class ButtonSection:
         except KeyError as error:
             self.outer_section.outer_section.set_message(error.args[0])
 
-    def remove_state(self, label):
+    def remove_state(self, label: str):
         try:
             control_section = self.outer_section.outer_section.control_section
             controller = self.outer_section.outer_section.controller
@@ -397,7 +412,7 @@ class ButtonSection:
         except KeyError as error:
             self.outer_section.outer_section.set_message(error.args[0])
 
-    def add_state(self, label):
+    def add_state(self, label: str):
         try:
             control_section = self.outer_section.outer_section.control_section
             controller = self.outer_section.outer_section.controller
