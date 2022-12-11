@@ -1,8 +1,8 @@
 """The console app with console UI/UX."""
 
-from typing import List
-from controller import controller
 import os
+from typing import List
+from automation.controller import controller
 
 class Engine:
     """The console app itself."""
