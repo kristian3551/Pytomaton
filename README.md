@@ -2,15 +2,29 @@
 ## Summary
 A library/desktop/console application for working with finite state automatons. Pytomaton is a project for passing Python programming course in FMI. It contains virtually all the main operations of (non-)deterministic finite automatons learned in *Languages, automata and computability* course in FMI. All the algorithms are a straight-forward implementations of standard automatons construction definitions. 
 
-> ## How to run it
-> 1. Make sure you have Python installed on your machine. If > you don't, you can download it from the official site: https://www.python.org/downloads/
-> 2. In terminal write:
-`git clone https://github.com/kristian3551/Pytomaton.git`
-> 3. Install dependencies with:  
-> `pip install -r requirements.txt`.
-> 4. Go to the root folder of the project and run `python3 main.py` **from there**.
+# How to run
 
-The GUI app is runned by default. If you want to run the console app, you have to modify `main.py` file a bit. Just uncomment the row with the import from `engine.py`, initialize **app** with an instance of **ConsoleApp** and run `python3 main.py`*
+1. Install [Python 3](https://www.python.org/downloads/) and [pip](https://pip.pypa.io/en/stable/installation/) on your system
+2. Install tkinter
+    - On Windows: it comes by default with Python
+    - On Mac:
+      ```
+      brew install python-tk
+      ```
+    - On Linux: refer to your distribution. Some information [here](https://stackoverflow.com/a/25905642/12036073)
+3. Clone repository
+    ```
+    git clone https://github.com/kristian3551/Pytomaton.git
+    ```
+4. Install Python dependencies
+    ```
+    pip install -r requirements.txt
+    ```
+5. Run from **root of repository**
+    ```
+    python3 main.py
+    ```
+*The GUI app is runned by default. If you want to run the console app, you have to modify `main.py` file a bit. Just uncomment the row with the import from `engine.py`, initialize **app** with an instance of **ConsoleApp** and run `python3 main.py`*
 
 ## Functionality
 
