@@ -70,7 +70,7 @@ class ControlSection:
         if self.outer_section.operation_section.auto_image_label:
             self.outer_section.operation_section.auto_image_label.grid_forget()
             self.outer_section.operation_section.name_label.grid_forget()
-        auto_image = PhotoImage(file="automaton.gv.png")
+        auto_image = PhotoImage(file="database/automaton.gv.png")
         self.outer_section.operation_section.auto_image_label = ttk.Label(\
             self.outer_section.operation_section.section, image=auto_image)
         self.outer_section.operation_section.auto_image_label.image = auto_image

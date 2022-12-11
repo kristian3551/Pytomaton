@@ -205,7 +205,7 @@ class Controller:
                     if (state.label, target.label) not in added_edges:
                         dot.edge(state.label, target.label, label=f" {', '.join(sorted(letters))}")
                         added_edges.add((state.label, target.label))
-        dot.render('automaton.gv')
+        dot.render('database/automaton.gv')
     def print(self) -> None:
         """Prints all automatons' __repr__-s from repository."""
         for name, auto in self.automatons.items():
