@@ -378,6 +378,16 @@ class Automaton:
                     result.add_transition(res.label, letter, state.label)
         return result
 
+    def left_arrow(self, label: str) -> Automaton:
+        result: Automaton = self.copy()
+        result.finals = {result.get_state(label)}
+        return result
+
+    def right_arrow(self, label: str) -> Automaton:
+        result: Automaton = self.copy()
+        result.starts = {result.get_state(label)}
+        return result
+
     @staticmethod
     def by_letter(letter: str) -> Automaton:
         """Creates an automaton with language L = {letter}."""
