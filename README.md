@@ -60,7 +60,7 @@ Supported functionalities are:
 
 ## Application
 
-### Controllers
+### Controller
 The class *Controller* in module `automation/controller` represents the application itself. An instance if the *Controller* class is used in both `automation/engine.py` and `automation/app.py` and holds all of the application's supported functionality (not necessarily all of the implemented functionality in *Automaton* and *RegExpr* classes). It holds the logic for creating a .png file from an automaton using `Graphviz` library. The .png is saved in *database* folder. All the automatons in *Controller* are saved by default in `database/automatons.txt` in right format. If you want, you can change it by modifying `DEFAULT_DATABASE_PATH` constant in *Controller*.
 
 ### Engine
