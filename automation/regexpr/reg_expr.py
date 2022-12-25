@@ -1,6 +1,5 @@
 """Module for working with regular expressions."""
 from typing import List
-
 from automation.automaton.automaton import Automaton
 
 def is_letter(symbol: str) -> bool:
@@ -18,7 +17,7 @@ class RegExpr:
         return self.__validate(self.regex)
 
     def convert_in_rpn(self) -> str:
-        """Converts regex into reverse polish notation."""
+        """Converts regex into reverse polish notation using Shunting-Yard algorithm."""
         output: List[str] = []
         stack: List[str] = []
         for i, value in enumerate(self.regex):
@@ -74,8 +73,7 @@ class RegExpr:
     def compile(self) -> Automaton:
         """Reads valid regular expression and returns an automaton with same language."""
         # if not self.validate():
-        #     print("Regular expression is NOT valid!")
-        #     return Automaton()
+        #     raise ValueError("Regular expression is NOT valid!")
         regex_rpn: str = self.convert_in_rpn()
         stack: List[Automaton] = []
         for symbol in regex_rpn:
