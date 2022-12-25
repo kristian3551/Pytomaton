@@ -247,8 +247,8 @@ def test_complement_throws():
         a.add_state('1')
         a.set_start('0')
         a.add_transition('0', 'a', '1')
-        a.add_transition('0', 'a', '0')
-        a.add_transition('1', 'a', '1')
+        a.add_transition('0', 'b', '0')
+        a.add_transition('1', 'b', '1')
         a.make_state_final('1')
         a.complement()
 
