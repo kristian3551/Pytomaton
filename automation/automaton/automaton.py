@@ -42,14 +42,20 @@ class Automaton:
         index: int = self.states_dict[label] if label in self.states_dict else -1
         if index >= len(self.states) or index < 0:
             return False
+
+        # If finals or starts include the state, remove it from there.
         self.finals = {state for state in self.finals if state is not self.states[index]}
         self.starts = {state for state in self.starts if state is not self.states[index]}
+
+        # Remove the state transitions.
         if self.states[index] in self.transitions:
             del self.transitions[self.states[index]]
         for state, transitions in self.transitions.items():
             for letter in transitions:
                 if self.states[index] in transitions[letter]:
                     transitions[letter].remove(self.states[index])
+
+        # Delete state from states.
         self.states.pop(index)
         del self.states_dict[label]
         return True
@@ -89,18 +95,25 @@ class Automaton:
     def __add_transition_by_index(self, idx1: int, letter: str, idx2: int) -> bool:
         """Adding new transition from state with index idx1 to state
         with index idx2 with letter 'letter'"""
+        # If indexes are not valid, return.
         if idx1 < 0 or idx1 >= len(self.states):
             return False
         if idx2 < 0 or idx2 >= len(self.states):
             return False
+
+        # If letter is not in alphabet, add it.
         if letter not in self.alphabet:
             self.alphabet.add(letter)
+
         state_1: State = self.states[idx1]
         state_2: State = self.states[idx2]
+
+        # Add the transition
         if state_1 not in self.transitions:
             self.transitions[state_1] = {letter: set([state_2])}
         elif letter not in self.transitions[state_1]:
             self.transitions[state_1][letter] = set([state_2])
+        # It is not allowed to have two same transitions in automaton.
         elif state_2 in self.transitions[state_1][letter]:
             return False
         else:
@@ -127,14 +140,15 @@ class Automaton:
         """Removes transition."""
         if self.get_state(label1) not in self.transitions\
              or letter not in self.transitions[self.get_state(label1)]\
-            or label2 not in self.states_dict or self.get_state(label2)\
-                 not in self.transitions[self.get_state(label1)][letter]:
+            or label2 not in self.states_dict\
+                or self.get_state(label2) not in self.transitions[self.get_state(label1)][letter]:
             return False
         self.transitions[self.get_state(label1)][letter].remove(self.get_state(label2))
         return True
 
     def __get_state_transitions_by_index(self, index: int) -> Dict[str, Set[State]]:
-        """Get transitions of state with index 'index'."""
+        """Get transitions of state with index 'index'. It is a helper function
+        for Automaton.get_state_transitions."""
         if index < 0 or index >= len(self.states):
             return {}
         state: State = self.states[index]
@@ -151,9 +165,9 @@ class Automaton:
         for letter in word:
             new_states: Set[State] = set()
             for state in states:
-                transitions: Dict[str, Set[State]] = self.get_state_transitions(state)
-                if letter in transitions:
-                    new_states = new_states | set(transitions[letter])
+                state_transitions: Dict[str, Set[State]] = self.get_state_transitions(state)
+                if letter in state_transitions:
+                    new_states = new_states | set(state_transitions[letter])
             states = new_states
         for state in states:
             if state in self.finals:
@@ -209,7 +223,7 @@ class Automaton:
         return self.states[self.states_dict[label]] if label in self.states_dict else State()
 
     def union(self, auto: Automaton) -> Automaton:
-        """Unites automatons"""
+        """Unites automatons following the Kleene's theorem algorithm."""
         if self is auto:
             return self
         result: Automaton = self.copy()
@@ -230,9 +244,13 @@ class Automaton:
         return result
 
     def concat(self, auto) -> Automaton:
-        """Concatenates automatons"""
+        """Returns an automaton with language L(self) . L(auto)."""
         result: Automaton = self.copy()
         other_auto: Automaton = auto.copy()
+
+        # The algorithm follows the Kleene construction literally.
+        # Renames all states in other_auto which have duplicate labels
+        # with labels in result and adds them in result.
         for value in other_auto.states:
             state: State = value
             if state.label in result.states_dict:
@@ -240,16 +258,21 @@ class Automaton:
                 state.label = str(len(result.states))
                 other_auto.states_dict[state.label] = len(result.states)
             result.add_state(state.label)
+
         for final in result.finals:
             for start in other_auto.starts:
                 start_transitions: Dict[str, Set[State]] = other_auto.transitions[start]\
                      if start in other_auto.transitions else {}
                 for letter in start_transitions:
                     result.add_transitions(final.label, letter, start_transitions[letter])
+
         for state in other_auto.transitions:
             for letter in other_auto.transitions[state]:
                 result.add_transitions(state.label, letter, other_auto.transitions[state][letter])
 
+
+        # If there is a starting state amongst finals, the result finals are
+        # self.finals U other.finals. Else result finals are other.finals.
         if not set(other_auto.starts).intersection(set(other_auto.finals)):
             result.finals = set()
         for final in other_auto.finals:
@@ -258,20 +281,20 @@ class Automaton:
 
     def complement(self) -> Automaton:
         """Returns automaton with complement language."""
-        if not self.is_deterministic():
+        # Automaton must be deterministic (or total).
+        if not self.is_total():
             raise ValueError("Automaton is not deterministic.")
+
         result: Automaton = self.copy()
         if not result.is_total():
             result.make_total()
-        finals: Set[State] = set([final for final in result.finals])
-        result.finals = set()
-        for state in result.states:
-            if not state in finals:
-                result.make_state_final(state.label)
+        old_finals: Set[State] = set(result.finals)
+        result.finals = {state for state in result.states if state not in old_finals}
         return result
 
     def star(self) -> Automaton:
-        """Returns automaton with language L(self)*"""
+        """Returns automaton with language L(self)*.
+        The algorithm derives directly from Kleene's theorem."""
         result: Automaton = self.copy()
         for final in result.finals:
             for start in result.starts:
@@ -285,34 +308,55 @@ class Automaton:
         return result
 
     def intersection(self, other_auto: Automaton) -> Automaton:
-        """Returns an automaton with language L(self) ^ L(other_auto)."""
+        """Returns an automaton with language L(self) ^ L(other_auto).
+        The algorithm uses the technique of parallel automatons processing
+        (the states are ordered pairs)."""
+
+        # The automatons must have same alphabet.
         if len(set(self.alphabet).intersection(set(other_auto.alphabet))) != len(self.alphabet):
             raise ValueError("Automations don't have same alphabet.")
+
+        # Both have to be deterministic.
         if not self.is_deterministic() or not other_auto.is_deterministic():
             raise ValueError("Automaton is not deterministic.")
         result: Automaton = Automaton()
         result.alphabet = set(self.alphabet)
+
+        # Adds result states as ordered pairs: states labels are
+        # {label_from_self}x{label_from_other} for all states
+        # from self and other_auto.
         for state_1 in self.states:
             for state_2 in other_auto.states:
                 result.add_state(f"{state_1.label}x{state_2.label}")
         for state_1 in self.starts:
             for state_2 in other_auto.starts:
                 result.set_start(f"{state_1.label}x{state_2.label}")
+
         for state in result.states:
             tokens: List[str] = state.label.split("x")
             transitions_1: Dict[str, Set[State]] =\
                  self.get_state_transitions(self.get_state(tokens[0]))
             transitions_2: Dict[str, Set[State]] =\
                  other_auto.get_state_transitions(other_auto.get_state(tokens[1]))
+
+            # forall q in self.states forall p in other.states
+            #   forall l in self.alphabet forall transitions t1 of q with
+            #       letter l forall transitions t2 of p with letter l:
+            #           t1, t2 are in delta("qxp", l)
+            # This the idea implemented below.
             for letter in transitions_1:
                 if letter in transitions_2:
                     for s_1 in transitions_1[letter]:
                         for s_2 in transitions_2[letter]:
                             result.add_transition(state.label, letter, f"{s_1.label}x{s_2.label}")
+
+        # Both components have to be starting states in order to make the pair starting.
         result.starts = {state for state in result.states
             if self.states[self.states_dict[state.label.split('x')[0]]] in self.starts
                 and other_auto.states[self.states_dict[state.label.split('x')[1]]]\
                     in other_auto.starts}
+
+        # Analogically for the final states.
         result.finals = {state for state in result.states
             if self.states[self.states_dict[state.label.split('x')[0]]] in self.finals
                 and other_auto.states[self.states_dict[state.label.split('x')[1]]]\
@@ -329,9 +373,10 @@ class Automaton:
             count += 1
 
     def determinize(self) -> Automaton:
-        """Returns a determinized version of self"""
+        """Returns a determinized version of self. The algorithm is
+        derived from the Rabin-Scott theorem."""
         result: Automaton = Automaton()
-        result.alphabet = {letter for letter in self.alphabet}
+        result.alphabet = set(self.alphabet)
         queue: List[Set[State]] = []
         queue.append(self.starts)
         start_label: str = str(sorted({state.label for state in self.starts}))
@@ -347,23 +392,30 @@ class Automaton:
                     transitions: Dict[str, Set[State]] = self.get_state_transitions(state)
                     states_set = states_set.union(transitions[letter] if letter in transitions\
                          else set())
-                set_label: str = str(sorted(set([state.label for state in states_set])))
+                set_label: str = str(sorted({state.label for state in states_set}))
                 if set_label not in result.states_dict:
                     queue.append(states_set)
                     result.add_state(set_label)
                     if len([state for state in states_set if state in self.finals]) > 0:
                         result.make_state_final(set_label)
                 result.add_transition(str(sorted(\
-                    set([state.label for state in current]))), letter, set_label)
+                    {state.label for state in current})), letter, set_label)
         result.rename()
         return result
 
     def minimize(self) -> Automaton:
-        """Return a minimized automaton with same language."""
+        """Return a minimized automaton with same language.
+        The algorithm follows the Bzozowski theorem: The determinized version
+        of the automaton created with the construction for L(auto)^rev is
+         the minimal automaton for L^rev."""
         return self.copy().determinize().reverse().determinize().reverse().determinize()
 
     def reverse(self) -> Automaton:
-        """Returns an automaton with language L(self)^rev"""
+        """Returns an automaton with language L(self)^rev.
+        The algorithm is as it follows:
+        1. All finals become starts.
+        2. All starts become finals.
+        3. Change the direction of transitions."""
         result: Automaton = Automaton()
         for state in self.states:
             result.add_state(state.label)
@@ -379,11 +431,15 @@ class Automaton:
         return result
 
     def left_arrow(self, label: str) -> Automaton:
+        """Returns an automaton with language all the words that start from state {label}
+        and when read in {self} automaton finish at final state."""
         result: Automaton = self.copy()
         result.finals = {result.get_state(label)}
         return result
 
     def right_arrow(self, label: str) -> Automaton:
+        """Returns an automaton with language all the words that when
+        read in the automaton would finish at state {label}."""
         result: Automaton = self.copy()
         result.starts = {result.get_state(label)}
         return result
@@ -401,7 +457,7 @@ class Automaton:
 
     @staticmethod
     def singleton_epsilon() -> Automaton:
-        """Creates an automaton with language L = {letter}."""
+        """Creates an automaton with language L = {}."""
         auto: Automaton = Automaton()
         auto.add_state()
         auto.set_start('0')
@@ -417,29 +473,29 @@ class Automaton:
 
     def save_in_file(self, path: List[str]) -> None:
         """Function for saving in file."""
-        file = open(os.path.join(*path), 'w', encoding="UTF-8")
-        file.writelines(self.stream_format())
-        file.close()
+        with open(os.path.join(*path), 'w', encoding="UTF-8") as file:
+            file.writelines(self.stream_format())
+            file.close()
 
     def load_from_file(self, path: List[str]) -> None:
-        """Loads automaton from file."""
-        file = open(os.path.join(*path), encoding="UTF-8")
-        states_labels: List[str] = file.readline().split(" ")
-        for label in states_labels:
-            self.add_state(label.replace('\n', ''))
-        starts_labels: List[str] = file.readline().split(" ")
-        for label in starts_labels:
-            self.set_start(label.replace('\n', ''))
-        rest: List[str] = file.read().split('\n')
-        for i in range(len(rest) - 2):
-            transitions_raw = rest[i].split(" ")
-            start, letter, *targets = transitions_raw
-            for target in targets:
-                self.add_transition(start, letter, target)
-        final_labels: List[str] = rest[-2].split(" ")
-        for label in final_labels:
-            self.make_state_final(label)
-        file.close()
+        """Loads automaton from file in the format of Automaton.stream_format function."""
+        with open(os.path.join(*path), encoding="UTF-8") as file:
+            states_labels: List[str] = file.readline().split(" ")
+            for label in states_labels:
+                self.add_state(label.replace('\n', ''))
+            starts_labels: List[str] = file.readline().split(" ")
+            for label in starts_labels:
+                self.set_start(label.replace('\n', ''))
+            rest: List[str] = file.read().split('\n')
+            for i in range(len(rest) - 2):
+                transitions_raw = rest[i].split(" ")
+                start, letter, *targets = transitions_raw
+                for target in targets:
+                    self.add_transition(start, letter, target)
+            final_labels: List[str] = rest[-2].split(" ")
+            for label in final_labels:
+                self.make_state_final(label)
+            file.close()
 
     def stream_format(self) -> str:
         """Returns a string to save in file."""
