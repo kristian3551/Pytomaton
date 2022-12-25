@@ -131,8 +131,7 @@ class Automaton:
         """Adds many transitions at a time."""
         states_labels: List[str] = [state.label for state in states]
         for state_label in states_labels:
-            res: bool = self.add_transition(label1, letter, state_label)
-            if not res:
+            if not self.add_transition(label1, letter, state_label):
                 return False
         return True
 
@@ -220,7 +219,7 @@ class Automaton:
 
     def get_state(self, label: str) -> State:
         """Returns state by label."""
-        return self.states[self.states_dict[label]] if label in self.states_dict else State()
+        return self.states[self.states_dict[label]] if label in self.states_dict else None
 
     def union(self, auto: Automaton) -> Automaton:
         """Unites automatons following the Kleene's theorem algorithm."""
@@ -296,11 +295,18 @@ class Automaton:
         """Returns automaton with language L(self)*.
         The algorithm derives directly from Kleene's theorem."""
         result: Automaton = self.copy()
+
+        # For every final f add transitions
+        # of all starting states (for every start
+        # and every letter: add transitions from start
+        # with the letter).
         for final in result.finals:
             for start in result.starts:
                 transitions: Dict[str, Set[State]] = self.get_state_transitions(start)
                 for letter in transitions:
                     result.add_transitions(final.label, letter, transitions[letter])
+
+        # Add a new state to add epsilon to L(result).
         start_label = str(len(result.states))
         result.add_state(start_label)
         result.starts.add(result.get_state(start_label))
@@ -377,30 +383,39 @@ class Automaton:
         derived from the Rabin-Scott theorem."""
         result: Automaton = Automaton()
         result.alphabet = set(self.alphabet)
+
         queue: List[Set[State]] = []
         queue.append(self.starts)
         start_label: str = str(sorted({state.label for state in self.starts}))
         result.add_state(start_label)
         result.set_start(start_label)
+
         if len([state for state in self.starts if state in self.finals]) > 0:
             result.make_state_final(start_label)
+
         while queue:
             current: Set[State] = queue.pop(0)
             for letter in result.alphabet:
                 states_set: Set[State] = set()
+
                 for state in current:
                     transitions: Dict[str, Set[State]] = self.get_state_transitions(state)
                     states_set = states_set.union(transitions[letter] if letter in transitions\
                          else set())
+
                 set_label: str = str(sorted({state.label for state in states_set}))
-                if set_label not in result.states_dict:
+
+                if not result.get_state(set_label):
                     queue.append(states_set)
                     result.add_state(set_label)
-                    if len([state for state in states_set if state in self.finals]) > 0:
+                    if [state for state in states_set if state in self.finals]:
                         result.make_state_final(set_label)
+
                 result.add_transition(str(sorted(\
                     {state.label for state in current})), letter, set_label)
+
         result.rename()
+
         return result
 
     def minimize(self) -> Automaton:
