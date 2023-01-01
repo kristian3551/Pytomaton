@@ -219,7 +219,7 @@ class Automaton:
 
     def get_state(self, label: str) -> State:
         """Returns state by label."""
-        return self.states[self.states_dict[label]] if label in self.states_dict else None
+        return self.states[self.states_dict[label]] if label in self.states_dict else State()
 
     def union(self, auto: Automaton) -> Automaton:
         """Unites automatons following the Kleene's theorem algorithm."""
@@ -405,7 +405,7 @@ class Automaton:
 
                 set_label: str = str(sorted({state.label for state in states_set}))
 
-                if not result.get_state(set_label):
+                if not result.get_state(set_label).label:
                     queue.append(states_set)
                     result.add_state(set_label)
                     if [state for state in states_set if state in self.finals]:
