@@ -4,7 +4,7 @@ A library/desktop/console application for working with finite state automatons. 
 
 # How to run
 
-1. Install [Python 3](https://www.python.org/downloads/) and [pip](https://pip.pypa.io/en/stable/installation/) on your system
+1. Install [Python](https://www.python.org/downloads/) and [pip](https://pip.pypa.io/en/stable/installation/) on your system
 2. Install tkinter
     - On Windows: it comes by default with Python
     - On Mac:
@@ -22,14 +22,14 @@ A library/desktop/console application for working with finite state automatons. 
     ```
 5. Run from **root of repository**
     ```
-    python3 main.py
+    python main.py
     ```
-*The GUI app is runned by default. If you want to run the console app, you have to modify `main.py` file a bit. Just uncomment the row with the import from `engine.py`, initialize **app** with an instance of **ConsoleApp** and run `python3 main.py`*
+*The GUI app is runned by default. If you want to run the console app, you have to modify `main.py` file a bit. Just import `ConsoleApp` class from `src/console_app.py` and create an instance. It has its own **run** method as well.*
 
 ## Functionality
 
 ### Automaton
-The class *Automaton* in module `automation/automaton` provides all the logic for working with automatons themselves.
+The class *Automaton* in module `src/automaton` provides all the logic for working with automatons themselves.
 
 *Basic automaton functionality:*
 1. Adding/removing automaton states
@@ -53,7 +53,7 @@ The class *Automaton* in module `automation/automaton` provides all the logic fo
 1. Saving/loading an automaton from file in right format (the format implemented in `stream-format` method in the *Automaton* class)
 
 ### RegExpr
-The class *RegExpr* in module `automation/regexpr` provides all the logic for working with regular expressions in the context of the formal definition (not the built-in RegEx).
+The class *RegExpr* in module `src/regexpr` provides all the logic for working with regular expressions in the context of the formal definition (not the built-in RegEx).
 Supported functionalities are:  
 1. Validating regular expression (follows the inductive definition of a regular expression)
 2. Processing regular expression and building an automaton (instance of *Automaton* class) with the same language: the regular expression is converted to reverse polish notation and then parsed to an automaton in the `compile` method
@@ -61,13 +61,13 @@ Supported functionalities are:
 ## Application
 
 ### Controller
-The class *Controller* in module `automation/controller` represents the application itself. An instance if the *Controller* class is used in both `automation/engine.py` and `automation/app.py` and holds all of the application's supported functionality (not necessarily all of the implemented functionality in *Automaton* and *RegExpr* classes). It holds the logic for creating a .png file from an automaton using `Graphviz` library. The .png is saved in *database* folder. All the automatons in *Controller* are saved by default in `database/automatons.txt` in right format. If you want, you can change it by modifying `DEFAULT_DATABASE_PATH` constant in *Controller*.
+The class *Controller* in module `src/controller` represents the application itself. An instance if the *Controller* class is used in both `src/console_app.py` and `src/app.py` and holds all of the application's supported functionality (not necessarily all of the implemented functionality in *Automaton* and *RegExpr* classes). It holds the logic for creating a .png file from an automaton using `Graphviz` library. The .png is saved in *database* folder. All the automatons in *Controller* are saved by default in `database/automatons.txt` in right format. If you want, you can change it by modifying `DEFAULT_DATABASE_PATH` constant in *Controller*.
 
-### Engine
-The class *Engine* in module `automation` holds all the logic of the console app. If you run the command `help` after starting the console app, you can find instructions for working with the automaton repository.
+### ConsoleApp
+The class *ConsoleApp* in module `src` holds all the logic of the console app. If you run the command `help` after starting the console app, you can find instructions for working with the automaton repository.
 
 ### App
-The classes in `automation/app.py` implement the GUI in the application. Tkinter is used for creating the graphical interface.
+The classes in `src/app.py` implement the GUI in the application. Tkinter is used for creating the graphical interface.
 
 ## Tests
 You can run all the tests in `tests/` by typing `python -m pytest -s` in terminal.
