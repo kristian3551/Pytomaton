@@ -46,13 +46,13 @@ class ControlSection:
         self.outer_section = outer_section
         self.control_section = ttk.Frame(frame)
 
-        self.input_fields: Dict[str, ttk.Button] = {}
+        self.input_fields: Dict[str, ttk.Entry] = {}
 
         self.input_fields["name_entry"] = ttk.Entry(self.control_section, width=50)
         self.input_fields["name_entry"].insert(0, "Name ")
         self.input_fields["name_entry"].grid(row=1)
         self.input_fields["regex_entry"] = ttk.Entry(self.control_section, width=50)
-        self.input_fields["regex_entry"].insert(0, "Regex/name of automaton")
+        self.input_fields["regex_entry"].insert(0, "Regex/name of automaton/empty")
         self.input_fields["regex_entry"].grid(row=2)
         self.load_button = ttk.Button(self.control_section, text="Load!",
          command=lambda: self.load_auto(self.input_fields["name_entry"].get()))
@@ -117,7 +117,9 @@ class ControlSection:
         the operation section."""
         try:
             self.outer_section.controller.replace_or_add_automaton(name,
-                self.outer_section.controller.from_regex(operation))
+                self.outer_section.controller.from_regex(operation)\
+                    if operation != "empty"\
+                         else self.outer_section.controller.empty_automaton())
             self.load_auto(name)
             self.outer_section.set_message("Automation created successfully.")
         except KeyError as error:
@@ -157,35 +159,44 @@ class ConstructionSection:
 
         self.input_fields["determinize_button"] = ttk.Button(self.construction_section,
          text="Determinize",
-         command=lambda: self.determinize(self.outer_section.control_section.get_name()))
+         command=lambda: self.perform_construction("det", "Successfully determinized automaton!",
+             self.outer_section.control_section.get_name()))
 
         self.input_fields["minimize_button"]\
         = ttk.Button(self.construction_section, text="Minimize",
-        command=lambda: self.minimize(self.outer_section.control_section.get_name()))
+        command=lambda: self.perform_construction("min", "Successfully minimized automaton!",
+             self.outer_section.control_section.get_name()))
 
         self.input_fields["concat_button"]\
             = ttk.Button(self.construction_section, text="Concat",
-        command=lambda: self.concat(self.outer_section.control_section.get_name(),
-         self.outer_section.control_section.get_regex()))
+        command=lambda: self.perform_construction("concat", "Successfully concatenated automatons!",
+             self.outer_section.control_section.get_name(),
+              self.outer_section.control_section.get_regex()))
 
         self.input_fields["union_button"] = ttk.Button(self.construction_section, text="Union",
-        command=lambda: self.union(self.outer_section.control_section.get_name(),
-         self.outer_section.control_section.get_regex()))
+        command=lambda: self.perform_construction("union", "Successfully united automaton!",
+             self.outer_section.control_section.get_name(),
+             self.outer_section.control_section.get_regex()))
 
         self.input_fields["star_button"] = ttk.Button(self.construction_section, text="Kleene star",
-        command=lambda: self.star(self.outer_section.control_section.get_name()))
+        command=lambda: self.perform_construction("star", "Successfully starred automaton!",
+             self.outer_section.control_section.get_name()))
 
         self.input_fields["total_button"] = ttk.Button(self.construction_section, text="Make total",
-        command=lambda: self.total(self.outer_section.control_section.get_name()))
+        command=lambda: self.perform_construction("tot", "Successfully made automaton total!",
+             self.outer_section.control_section.get_name()))
 
         self.input_fields["intersection_button"]\
             = ttk.Button(self.construction_section, text="Intersection",
-        command=lambda: self.intersect(self.outer_section.control_section.get_name(),
-         self.outer_section.control_section.get_regex()))
+        command=lambda: self.perform_construction("intersect",
+             "Successfully intersected automatons!",
+             self.outer_section.control_section.get_name(),
+             self.outer_section.control_section.get_regex()))
 
         self.input_fields["complement_button"]\
             = ttk.Button(self.construction_section, text="Complement",
-        command=lambda: self.complement(self.outer_section.control_section.get_name()))
+        command=lambda: self.perform_construction("compl", "Successfully united automaton!",
+             self.outer_section.control_section.get_name()))
         self.render_elements()
 
     def render_elements(self):
@@ -200,97 +211,34 @@ class ConstructionSection:
         self.input_fields["complement_button"].grid(row=2, column=4)
         self.construction_section.grid(row=2)
 
-
-    # Functions that are triggered when pressing buttons.
-    def complement(self, name: str) -> None:
+    def perform_construction(self, cons_type: str, succ_message: str, name1: str, name2: str = ""):
         """Function triggered when clicking on
-         button from this section with the same name as the function."""
+         button from this section."""
         try:
-            self.outer_section.controller.replace_or_add_automaton(name,
-                self.outer_section.controller.complement(name))
-            self.outer_section.control_section.load_auto(name)
-            self.outer_section.set_message("Successfully made automaton complement")
-        except KeyError as error:
-            self.outer_section.set_message(error.args[0])
-
-    def determinize(self, name: str):
-        """Function triggered when clicking on
-         button from this section with the same name as the function."""
-        try:
-            self.outer_section.controller.replace_or_add_automaton(name,
-                self.outer_section.controller.determinize(name))
-            self.outer_section.control_section.load_auto(name)
-            self.outer_section.set_message("Successfully determinized automaton")
-        except KeyError as error:
-            self.outer_section.set_message(error.args[0])
-
-    def total(self, name: str):
-        """Function triggered when clicking on
-         button from this section with the same name as the function."""
-        try:
-            self.outer_section.controller.replace_or_add_automaton(name,
-                self.outer_section.controller.determinize(name))
-            self.outer_section.control_section.load_auto(name)
-            self.outer_section.set_message("Successfully made automaton total")
-        except KeyError as error:
-            self.outer_section.set_message(error.args[0])
-
-    def concat(self, name1: str, name2: str):
-        """Function triggered when clicking on
-         button from this section with the same name as the function.
-         name1 and name2 are the names of the automatons."""
-        try:
+            auto_to_replace = self.outer_section.controller.empty_automaton()
+            if cons_type == "compl":
+                auto_to_replace = self.outer_section.controller.complement(name1)
+            elif cons_type == "det":
+                auto_to_replace = self.outer_section.controller.determinize(name1)
+            elif cons_type == "tot":
+                auto_to_replace = self.outer_section.controller.total(name1)
+            elif cons_type == "concat":
+                auto_to_replace = self.outer_section.controller.concat(name1, name2)
+            elif cons_type == "min":
+                auto_to_replace = self.outer_section.controller.minimize(name1)
+            elif cons_type == "intersect":
+                auto_to_replace = self.outer_section.controller.intersection(name1, name2)
+            elif cons_type == "union":
+                auto_to_replace = self.outer_section.controller.union(name1, name2)
+            elif cons_type == "star":
+                auto_to_replace = self.outer_section.controller.star(name1)
             self.outer_section.controller.replace_or_add_automaton(name1,
-                self.outer_section.controller.concat(name1, name2))
+                auto_to_replace)
             self.outer_section.control_section.load_auto(name1)
-            self.outer_section.set_message("Successfully concatenated automaton")
-        except KeyError as error:
-            self.outer_section.set_message(error.args[0])
-
-    def minimize(self, name: str):
-        """Function triggered when clicking on
-         button from this section with the same name as the function."""
-        try:
-            self.outer_section.controller.replace_or_add_automaton(name,
-            self.outer_section.controller.minimize(name))
-            self.outer_section.control_section.load_auto(name)
-            self.outer_section.set_message("Successfully minimized automaton")
-        except KeyError as error:
-            self.outer_section.set_message(error.args[0])
-
-    def intersect(self, name1: str, name2: str):
-        """Function triggered when clicking on
-         button from this section with the same name as the function."""
-        try:
-            self.outer_section.controller.replace_or_add_automaton(name1,
-            self.outer_section.controller.intersection(name1, name2))
-            self.outer_section.control_section.load_auto(name1)
-            self.outer_section.set_message("Successfully concatenated automaton")
+            self.outer_section.set_message(succ_message)
         except KeyError as error:
             self.outer_section.set_message(error.args[0])
         except ValueError as error:
-            self.outer_section.set_message(error.args[0])
-
-    def union(self, name1: str, name2: str):
-        """Function triggered when clicking on
-         button from this section with the same name as the function."""
-        try:
-            self.outer_section.controller.replace_or_add_automaton(name1,
-            self.outer_section.controller.union(name1, name2))
-            self.outer_section.control_section.load_auto(name1)
-            self.outer_section.set_message("Successfully united automaton")
-        except KeyError as error:
-            self.outer_section.set_message(error.args[0])
-
-    def star(self, name: str):
-        """Function triggered when clicking on
-         button from this section with the same name as the function."""
-        try:
-            self.outer_section.controller.replace_or_add_automaton(name,
-             self.outer_section.controller.star(name))
-            self.outer_section.control_section.load_auto(name)
-            self.outer_section.set_message("Successfully applied Kleene star constr to automaton")
-        except KeyError as error:
             self.outer_section.set_message(error.args[0])
 
 # --------------------------------- Operation section ---------------------------------
