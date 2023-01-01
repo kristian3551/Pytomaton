@@ -1,5 +1,5 @@
 import pytest
-from automation.controller.controller import Controller
+from src.controller.controller import Controller
 
 def test_add_automaton():
     c = Controller()

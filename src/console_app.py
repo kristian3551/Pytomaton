@@ -2,7 +2,7 @@
 
 import os
 from typing import List
-from automation.controller import controller
+from src.controller import controller
 
 class ConsoleApp:
     """The console app itself."""

@@ -3,8 +3,8 @@
 import os
 from typing import Dict, List, Set, Tuple
 import graphviz
-from automation.automaton.automaton import Automaton
-from automation.regexpr.reg_expr import RegExpr
+from src.automaton.automaton import Automaton
+from src.regexpr.reg_expr import RegExpr
 
 NOT_FOUND_ERROR_MSG: str = "Automaton is not found!"
 AUTOMATON_ALREADY_EXISTS_MSG: str = "Automaton already exists!"

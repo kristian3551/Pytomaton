@@ -1,5 +1,5 @@
 import pytest
-from automation.automaton.automaton import Automaton
+from src.automaton.automaton import Automaton
 
 def test_add_state():
     a: Automaton = Automaton()

@@ -1,5 +1,5 @@
-from automation.regexpr.reg_expr import RegExpr
-from automation.automaton.automaton import Automaton
+from src.regexpr.reg_expr import RegExpr
+from src.automaton.automaton import Automaton
 
 def test_validate():
     regex = RegExpr("(a+b)*aba(a+b)*")
