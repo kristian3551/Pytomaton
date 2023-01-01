@@ -4,7 +4,7 @@ GUI interface made with TKinter."""
 
 from tkinter import ttk, PhotoImage, Tk
 from typing import Dict
-from src.controller.controller import Controller
+from src.controller.controller import Controller # pyright: ignore[reportMissingImport]
 
 # --------------------------------- App ---------------------------------
 

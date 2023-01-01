@@ -2,7 +2,7 @@
 
 import os
 from typing import Dict, List, Set, Tuple
-import graphviz
+import graphviz # type: ignore
 from src.automaton.automaton import Automaton
 from src.regexpr.reg_expr import RegExpr
 
