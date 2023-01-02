@@ -147,36 +147,36 @@ class Controller:
         return Automaton()
     def save_in_file(self) -> None:
         """Saves all automatons in right format in .txt file with location DEFAULT_DATABASE_PATH"""
-        file = open(os.path.join(*DEFAULT_DATABASE_PATH), 'w', encoding="UTF-8")
-        file.writelines(''.join([f"{name}\n" + auto.stream_format()\
-             for name, auto in self.automatons.items()]))
-        file.close()
+        with open(os.path.join(*DEFAULT_DATABASE_PATH), 'w', encoding="UTF-8") as file:
+            file.writelines(''.join([f"{name}\n" + auto.stream_format()\
+                 for name, auto in self.automatons.items()]))
+            file.close()
     def load_from_file(self) -> None:
         """Adds all automatons from file to the automaton repository."""
         self.automatons = {}
-        file = open(os.path.join(*DEFAULT_DATABASE_PATH), encoding="UTF-8")
-        line = file.readline()
-        while line:
-            name: str = line[0:-1]
-            self.add_automaton(name, Automaton())
+        with open(os.path.join(*DEFAULT_DATABASE_PATH), encoding="UTF-8") as file:
             line = file.readline()
-            states_labels: List[str] = line[0:-1].split(' ')
-            for label in states_labels:
-                self.automatons[name].add_state(label)
-            line = file.readline()
-            starts_labels: List[str] = line[0:-1].split(' ')
-            for label in starts_labels:
-                self.automatons[name].set_start(label)
-            while line[0] != 'f':
+            while line:
+                name: str = line[0:-1]
+                self.add_automaton(name, Automaton())
                 line = file.readline()
-                start, letter, *targets = line[0:-1].split(' ')
-                for target in targets:
-                    self.automatons[name].add_transition(start, letter, target)
-            dummy, *finals = line[0:-1].split(' ')
-            for final in finals:
-                self.automatons[name].make_state_final(final)
-            line = file.readline()
-        file.close()
+                states_labels: List[str] = line[0:-1].split(' ')
+                for label in states_labels:
+                    self.automatons[name].add_state(label)
+                line = file.readline()
+                starts_labels: List[str] = line[0:-1].split(' ')
+                for label in starts_labels:
+                    self.automatons[name].set_start(label)
+                while line[0] != 'f':
+                    line = file.readline()
+                    start, letter, *targets = line[0:-1].split(' ')
+                    for target in targets:
+                        self.automatons[name].add_transition(start, letter, target)
+                dummy, *finals = line[0:-1].split(' ')
+                for final in finals:
+                    self.automatons[name].make_state_final(final)
+                line = file.readline()
+            file.close()
     def show_automaton(self, name: str) -> None:
         """Creates automaton.png picture of automaton <name> using GraphViz."""
         if name not in self.automatons:
