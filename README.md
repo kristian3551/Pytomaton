@@ -24,7 +24,6 @@ A library/desktop/console application for working with finite state automatons. 
     ```
     python main.py
     ```
-*The GUI app is runned by default. If you want to run the console app, you have to modify `main.py` file a bit. Just import `ConsoleApp` class from `src/console_app.py` and create an instance. It has its own **run** method as well.*
 
 ## Functionality
 
@@ -61,10 +60,7 @@ Supported functionalities are:
 ## Application
 
 ### Controller
-The class *Controller* in module `src/controller` represents the application itself. An instance if the *Controller* class is used in both `src/console_app.py` and `src/app.py` and holds all of the application's supported functionality (not necessarily all of the implemented functionality in *Automaton* and *RegExpr* classes). It holds the logic for creating a .png file from an automaton using `Graphviz` library. The .png is saved in *database* folder. All the automatons in *Controller* are saved by default in `database/automatons.txt` in right format. If you want, you can change it by modifying `DEFAULT_DATABASE_PATH` constant in *Controller*.
-
-### ConsoleApp
-The class *ConsoleApp* in module `src` holds all the logic of the console app. If you run the command `help` after starting the console app, you can find instructions for working with the automaton repository.
+The class *Controller* in module `src/controller` represents the application itself. An instance if the *Controller* class holds all of the application's supported functionality (not necessarily all of the implemented functionality in *Automaton* and *RegExpr* classes). It holds the logic for creating a .png file from an automaton using `Graphviz` library. The .png is saved in *database* folder. All the automatons in *Controller* are saved by default in `database/automatons.txt` in right format. If you want, you can change it by modifying `DEFAULT_DATABASE_PATH` constant in *Controller*.
 
 ### App
 The classes in `src/app.py` implement the GUI in the application. Tkinter is used for creating the graphical interface.
