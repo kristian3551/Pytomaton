@@ -24,7 +24,7 @@ A library/desktop/console application for working with finite state automatons. 
     ```
     python main.py
     ```
-
+*Make sure you add Graphviz to the Path variable on Windows!*
 ## Functionality
 
 ### Automaton
