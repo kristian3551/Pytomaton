@@ -66,7 +66,7 @@ class ButtonSection:
         try:
             control_section = self.outer_section.outer_section.control_section
             current_auto_name = self.outer_section.outer_section.current_auto_name
-            tokens = raw.split(' ')
+            tokens = raw.split(" ")
             self.__get_controller().add_transition(current_auto_name,
                  tokens[0], tokens[1], tokens[2])
             control_section.load_auto(current_auto_name)
@@ -82,7 +82,7 @@ class ButtonSection:
         try:
             control_section = self.outer_section.outer_section.control_section
             current_auto_name = self.outer_section.outer_section.current_auto_name
-            tokens = raw.split(' ')
+            tokens = raw.split(" ")
             self.__get_controller().remove_transition(current_auto_name,
              tokens[0], tokens[1], tokens[2])
             control_section.load_auto(current_auto_name)

@@ -7,7 +7,7 @@ import os
 
 class State:
     """State in a nutshell"""
-    def __init__(self, label: str = '') -> None:
+    def __init__(self, label: str = "") -> None:
         self.label = label
     def change_label(self, label: str):
         """Function that changes labels"""
@@ -31,7 +31,7 @@ class Automaton:
         self.transitions: Dict[State, Dict[str, Set[State]]] = {}
         self.finals: Set[State] = set()
 
-    def add_state(self, label: str = '') -> None:
+    def add_state(self, label: str = "") -> None:
         """Function for adding state"""
         label = str(len(self.states)) if not label or label in self.states_dict else label
         self.states.append(State(label))
@@ -358,14 +358,14 @@ class Automaton:
 
         # Both components have to be starting states in order to make the pair starting.
         result.starts = {state for state in result.states
-            if self.states[self.states_dict[state.label.split('x')[0]]] in self.starts
-                and other_auto.states[self.states_dict[state.label.split('x')[1]]]\
+            if self.states[self.states_dict[state.label.split("x")[0]]] in self.starts
+                and other_auto.states[self.states_dict[state.label.split("x")[1]]]\
                     in other_auto.starts}
 
         # Analogically for the final states.
         result.finals = {state for state in result.states
-            if self.states[self.states_dict[state.label.split('x')[0]]] in self.finals
-                and other_auto.states[self.states_dict[state.label.split('x')[1]]]\
+            if self.states[self.states_dict[state.label.split("x")[0]]] in self.finals
+                and other_auto.states[self.states_dict[state.label.split("x")[1]]]\
                     in other_auto.finals}
         return result
 
@@ -465,9 +465,9 @@ class Automaton:
         auto: Automaton = Automaton()
         auto.add_state()
         auto.add_state()
-        auto.set_start('0')
-        auto.make_state_final('1')
-        auto.add_transition('0', letter, '1')
+        auto.set_start("0")
+        auto.make_state_final("1")
+        auto.add_transition("0", letter, "1")
         return auto
 
     @staticmethod
@@ -475,8 +475,8 @@ class Automaton:
         """Creates an automaton with language L = {}."""
         auto: Automaton = Automaton()
         auto.add_state()
-        auto.set_start('0')
-        auto.make_state_final('0')
+        auto.set_start("0")
+        auto.make_state_final("0")
         return auto
 
     def __repr__(self) -> str:
@@ -488,7 +488,7 @@ class Automaton:
 
     def save_in_file(self, path: List[str]) -> None:
         """Function for saving in file."""
-        with open(os.path.join(*path), 'w', encoding="UTF-8") as file:
+        with open(os.path.join(*path), "w", encoding="UTF-8") as file:
             file.writelines(self.stream_format())
             file.close()
 
@@ -497,11 +497,11 @@ class Automaton:
         with open(os.path.join(*path), encoding="UTF-8") as file:
             states_labels: List[str] = file.readline().split(" ")
             for label in states_labels:
-                self.add_state(label.replace('\n', ''))
+                self.add_state(label.replace("\n", ""))
             starts_labels: List[str] = file.readline().split(" ")
             for label in starts_labels:
-                self.set_start(label.replace('\n', ''))
-            rest: List[str] = file.read().split('\n')
+                self.set_start(label.replace("\n", ""))
+            rest: List[str] = file.read().split("\n")
             for i in range(len(rest) - 2):
                 transitions_raw = rest[i].split(" ")
                 start, letter, *targets = transitions_raw
@@ -519,7 +519,7 @@ class Automaton:
             for letter in state_dict:
                 dict_to_list.append(f"{state.label} {letter} " + " ".join(\
                     [st.label for st in state_dict[letter]]))
-        return "".join([" ".join(self.states_dict.keys()) + '\n',
-                " ".join([start.label for start in self.starts]) + '\n',
-                "\n".join(dict_to_list) + '\n',
-                "f " + " ".join([final.label for final in self.finals]) + '\n'])
+        return "".join([" ".join(self.states_dict.keys()) + "\n",
+                " ".join([start.label for start in self.starts]) + "\n",
+                "\n".join(dict_to_list) + "\n",
+                "f " + " ".join([final.label for final in self.finals]) + "\n"])

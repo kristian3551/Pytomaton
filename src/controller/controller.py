@@ -8,7 +8,7 @@ from src.regexpr.reg_expr import RegExpr
 
 NOT_FOUND_ERROR_MSG: str = "Automaton is not found!"
 AUTOMATON_ALREADY_EXISTS_MSG: str = "Automaton already exists!"
-DEFAULT_DATABASE_PATH: List[str] = ['database', 'automatons.txt']
+DEFAULT_DATABASE_PATH: List[str] = ["database", "automatons.txt"]
 INVALID_NAME_MSG: str = "Name is invalid!"
 
 class Controller:
@@ -148,7 +148,7 @@ class Controller:
     def save_in_file(self) -> None:
         """Saves all automatons in right format in .txt file with location DEFAULT_DATABASE_PATH"""
         with open(os.path.join(*DEFAULT_DATABASE_PATH), 'w', encoding="UTF-8") as file:
-            file.writelines(''.join([f"{name}\n" + auto.stream_format()\
+            file.writelines("".join([f"{name}\n" + auto.stream_format()\
                  for name, auto in self.automatons.items()]))
             file.close()
     def load_from_file(self) -> None:
@@ -160,19 +160,19 @@ class Controller:
                 name: str = line[0:-1]
                 self.add_automaton(name, Automaton())
                 line = file.readline()
-                states_labels: List[str] = line[0:-1].split(' ')
+                states_labels: List[str] = line[0:-1].split(" ")
                 for label in states_labels:
                     self.automatons[name].add_state(label)
                 line = file.readline()
-                starts_labels: List[str] = line[0:-1].split(' ')
+                starts_labels: List[str] = line[0:-1].split(" ")
                 for label in starts_labels:
                     self.automatons[name].set_start(label)
                 while line[0] != 'f':
                     line = file.readline()
-                    start, letter, *targets = line[0:-1].split(' ')
+                    start, letter, *targets = line[0:-1].split(" ")
                     for target in targets:
                         self.automatons[name].add_transition(start, letter, target)
-                dummy, *finals = line[0:-1].split(' ')
+                dummy, *finals = line[0:-1].split(" ")
                 for final in finals:
                     self.automatons[name].make_state_final(final)
                 line = file.readline()
@@ -181,12 +181,12 @@ class Controller:
         """Creates automaton.png picture of automaton <name> using GraphViz."""
         if name not in self.automatons:
             raise KeyError(NOT_FOUND_ERROR_MSG)
-        dot = graphviz.Digraph(format='png')
+        dot = graphviz.Digraph(format="png")
         auto: Automaton = self.automatons[name]
         counter: int = 0
         for state in auto.states:
             if state in auto.starts:
-                dot.node(f"dummy{counter}", '', shape="none")
+                dot.node(f"dummy{counter}", "", shape="none")
                 dot.node(state.label, shape="circle" if state not in auto.finals\
                      else "doublecircle")
                 dot.edge(f"dummy{counter}", state.label)
@@ -205,12 +205,12 @@ class Controller:
                     if (state.label, target.label) not in added_edges:
                         dot.edge(state.label, target.label, label=f" {', '.join(sorted(letters))}")
                         added_edges.add((state.label, target.label))
-        dot.render('database/automaton.gv')
+        dot.render("database/automaton.gv")
     def print(self) -> None:
         """Prints all automatons' __repr__-s from repository."""
         for name, auto in self.automatons.items():
-            print('-------------------------')
-            print("Name: ", name, '\n')
+            print("-------------------------")
+            print("Name: ", name, "\n")
             print(auto)
     def contains(self, name: str) -> bool:
         """Returns if automaton <name> is found in automaton repository."""

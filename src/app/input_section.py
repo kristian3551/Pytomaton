@@ -11,7 +11,7 @@ class InputSection:
         self.accepts_button = ttk.Button(self.input_section, text="Accepts word",
         command=lambda: self.accepts_word(self.accepts_word_entry.get()))
         self.state_entry = ttk.Entry(self.input_section, width=30)
-        self.state_entry.insert(0, 'State: name')
+        self.state_entry.insert(0, "State: name")
         self.transition_entry = ttk.Entry(self.input_section, width=30)
         self.transition_entry.insert(0, "Transitions: name letter name")
 
