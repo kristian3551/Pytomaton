@@ -20,8 +20,8 @@ class InputSection:
     def render(self):
         """Displays section widgets."""
         self.accepts_word_entry.grid()
-        self.state_entry.grid(pady=5, padx=10)
         self.accepts_button.grid()
+        self.state_entry.grid(pady=5, padx=10)
         self.transition_entry.grid()
         self.state_entry.grid()
         self.input_section.grid(column=2, row=2)
