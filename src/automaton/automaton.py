@@ -492,9 +492,12 @@ class Automaton:
                                                  final,
                                                  upper_bound - 1)
 
-        result: str = f"({regex_1})+({regex_2}).({regex_3})*.({regex_4})"
-        if [reg for reg in [regex_2, regex_3, regex_4] if reg == '']:
+        result: str = f"{regex_1}+({regex_2})({regex_3})*({regex_4})"
+        if [reg for reg in [regex_2, regex_4] if reg == '']:
             result = regex_1
+        elif not regex_3:
+            result = f"{regex_1}+({regex_2})({regex_4})"
+
         return result
 
     def get_regex(self):
