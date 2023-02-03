@@ -5,6 +5,8 @@ from typing import Set, Dict, List
 import copy
 import os
 
+AUTOMATON_NOT_DETERMINISTIC: str = "Automaton is not deterministic."
+
 class State:
     """State in a nutshell"""
     def __init__(self, label: str = "") -> None:
@@ -282,7 +284,7 @@ class Automaton:
         """Returns automaton with complement language."""
         # Automaton must be deterministic (or total).
         if not self.is_total():
-            raise ValueError("Automaton is not deterministic.")
+            raise ValueError(AUTOMATON_NOT_DETERMINISTIC)
 
         result: Automaton = self.copy()
         if not result.is_total():
@@ -324,7 +326,7 @@ class Automaton:
 
         # Both have to be deterministic.
         if not self.is_deterministic() or not other_auto.is_deterministic():
-            raise ValueError("Automaton is not deterministic.")
+            raise ValueError(AUTOMATON_NOT_DETERMINISTIC)
         result: Automaton = Automaton()
         result.alphabet = set(self.alphabet)
 
@@ -458,6 +460,53 @@ class Automaton:
         result: Automaton = self.copy()
         result.starts = {result.get_state(label)}
         return result
+
+    def _get_regex_language(self, start: State, final: State, upper_bound: int) -> str:
+        """Find the language L(i, j, n) from Kleene's algorithm."""
+        print(f"L({start.label}, {final.label}, {upper_bound})")
+        if upper_bound == 0:
+            regex_letters: str = "+".join([letter for letter in self.transitions[start]
+                                         if final in self.transitions[start][letter]])
+            print(regex_letters)
+
+# 0 * a
+# | b
+# 1 * b
+# | a
+# 2 a, b
+            if start == final:
+                return "$+" + regex_letters
+            return regex_letters
+
+        regex_1: str = self._get_regex_language(start,
+                                                final,
+                                                upper_bound - 1)
+
+        regex_2: str = self._get_regex_language(start,
+                                                 self.states[upper_bound - 1],
+                                                 upper_bound - 1)
+
+        regex_3: str = self._get_regex_language(self.states[upper_bound - 1],
+                                                self.states[upper_bound - 1],
+                                                  upper_bound - 1)
+
+        regex_4: str = self._get_regex_language(self.states[upper_bound - 1],
+                                                 final,
+                                                 upper_bound - 1)
+
+        result: str = f"({regex_1})+({regex_2}).({regex_3})*.({regex_4})"
+
+        return result
+
+    def get_regex(self):
+        """Returns regex of the automaton using Kleene's algorithm."""
+        if not self.is_deterministic():
+            raise ValueError(AUTOMATON_NOT_DETERMINISTIC)
+
+        start: State = list(self.starts)[0]
+
+        return "+".join([self._get_regex_language(start, final, len(self.states))
+                             for final in self.finals])
 
     @staticmethod
     def by_letter(letter: str) -> Automaton:
