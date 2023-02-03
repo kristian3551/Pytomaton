@@ -461,14 +461,12 @@ class Automaton:
         result.starts = {result.get_state(label)}
         return result
 
-    def _get_regex_language(self, start: State, final: State, upper_bound: int) -> str:
+    def get_regex_language(self, start: State, final: State, upper_bound: int) -> str:
         """Find the language L(i, j, n) from Kleene's algorithm."""
-        print(f"L({start.label}, {final.label}, {upper_bound})")
+
         if upper_bound == 0:
             regex_letters: str = "+".join([letter for letter in self.transitions[start]
                                          if final in self.transitions[start][letter]])
-            print(regex_letters)
-
 # 0 * a
 # | b
 # 1 * b
@@ -478,24 +476,25 @@ class Automaton:
                 return "$+" + regex_letters
             return regex_letters
 
-        regex_1: str = self._get_regex_language(start,
+        regex_1: str = self.get_regex_language(start,
                                                 final,
                                                 upper_bound - 1)
 
-        regex_2: str = self._get_regex_language(start,
+        regex_2: str = self.get_regex_language(start,
                                                  self.states[upper_bound - 1],
                                                  upper_bound - 1)
 
-        regex_3: str = self._get_regex_language(self.states[upper_bound - 1],
+        regex_3: str = self.get_regex_language(self.states[upper_bound - 1],
                                                 self.states[upper_bound - 1],
                                                   upper_bound - 1)
 
-        regex_4: str = self._get_regex_language(self.states[upper_bound - 1],
+        regex_4: str = self.get_regex_language(self.states[upper_bound - 1],
                                                  final,
                                                  upper_bound - 1)
 
         result: str = f"({regex_1})+({regex_2}).({regex_3})*.({regex_4})"
-
+        if [reg for reg in [regex_2, regex_3, regex_4] if reg == '']:
+            result = regex_1
         return result
 
     def get_regex(self):
@@ -505,7 +504,7 @@ class Automaton:
 
         start: State = list(self.starts)[0]
 
-        return "+".join([self._get_regex_language(start, final, len(self.states))
+        return "+".join([self.get_regex_language(start, final, len(self.states))
                              for final in self.finals])
 
     @staticmethod
