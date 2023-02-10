@@ -461,7 +461,7 @@ class Automaton:
         result.starts = {result.get_state(label)}
         return result
 
-    def get_regex_language(self, start: State, final: State, upper_bound: int) -> str:
+    def _get_regex_language(self, start: State, final: State, upper_bound: int) -> str:
         """Find the language L(i, j, n) from Kleene's algorithm."""
 
         if upper_bound == 0:
@@ -476,19 +476,19 @@ class Automaton:
                 return "$+" + regex_letters
             return regex_letters
 
-        regex_1: str = self.get_regex_language(start,
+        regex_1: str = self._get_regex_language(start,
                                                 final,
                                                 upper_bound - 1)
 
-        regex_2: str = self.get_regex_language(start,
+        regex_2: str = self._get_regex_language(start,
                                                  self.states[upper_bound - 1],
                                                  upper_bound - 1)
 
-        regex_3: str = self.get_regex_language(self.states[upper_bound - 1],
+        regex_3: str = self._get_regex_language(self.states[upper_bound - 1],
                                                 self.states[upper_bound - 1],
                                                   upper_bound - 1)
 
-        regex_4: str = self.get_regex_language(self.states[upper_bound - 1],
+        regex_4: str = self._get_regex_language(self.states[upper_bound - 1],
                                                  final,
                                                  upper_bound - 1)
 
@@ -507,7 +507,7 @@ class Automaton:
 
         start: State = list(self.starts)[0]
 
-        return "+".join([self.get_regex_language(start, final, len(self.states))
+        return "+".join([self._get_regex_language(start, final, len(self.states))
                              for final in self.finals])
 
     @staticmethod
